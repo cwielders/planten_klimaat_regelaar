@@ -1,6 +1,6 @@
 #include <DHT.h>
 #include <DHT_U.h>
-//#include <DHT.h>;
+
 //#define DHTPIN1 2
 //#define DHTPIN2 3
 //#define DHTPIN3 4
