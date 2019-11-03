@@ -31,78 +31,71 @@ float logRange = 5.0; // 3.3v = 10^5 lux
 
 
 class Plantenbak {
-  
-  byte attachlightSensorTo;
-  byte attachsoilSensorTo;
-  byte attachairhumtempSensorTo;
-  byte attachsoilsensorpowerTo;
-  
-  public:
-  Plantenbak(byte Lightsensorpin, byte soilSensorpin,byte soilSensorpower,byte airhumtempSensorpin) 
-    {
-    attachlightSensorTo = Lightsensorpin;
-    attachsoilSensorTo = soilSensorpin;
-    attachsoilsensorpowerTo = soilSensorpower;
-    attachairhumtempSensorTo = airhumtempSensorpin;
     
+    byte attachlightSensorTo;
+    byte attachsoilSensorTo;
+    byte attachairhumtempSensorTo;
+    byte attachsoilsensorpowerTo;
     
+    public:
+    Plantenbak(byte Lightsensorpin, byte soilSensorpin,byte soilSensorpower,byte airhumtempSensorpin) {
+        attachlightSensorTo = Lightsensorpin;
+        attachsoilSensorTo = soilSensorpin;
+        attachsoilsensorpowerTo = soilSensorpower;
+        attachairhumtempSensorTo = airhumtempSensorpin;
     }
     
     void setup() {
     
-    dht1.begin();
-    
-    pinMode(attachsoilsensorpowerTo, OUTPUT);//Set D2 as an OUTPUT
-    digitalWrite(attachsoilsensorpowerTo, LOW);//Set to LOW so no power is flowing through the sensor
-    
-    analogReference(EXTERNAL); 
+        dht1.begin();
+        
+        pinMode(attachsoilsensorpowerTo, OUTPUT);//Set D2 as an OUTPUT
+        digitalWrite(attachsoilsensorpowerTo, LOW);//Set to LOW so no power is flowing through the sensor
+        
+        analogReference(EXTERNAL);
     }
 
     void loop() {
 
-    // read the values from the air humidity and temeprature sensor:
-    hum = dht1.readHumidity();
-    temp= dht1.readTemperature();
-    //Print temp and humidity values to serial monitor
-    Serial.print("Humidity: ");
-    Serial.print(hum);
-    Serial.print(" %, Temp: ");
-    Serial.print(temp);
-    Serial.println(" Celsius");
-    
-    // read the raw value from the soil sensor:
-    digitalWrite(soilPower1, HIGH);//turn D2 "On"
-    delay(10);//wait 10 milliseconds 
-    int soilmoisture = analogRead(attachsoilSensorTo);//Read the SIG value form sensor 
-    digitalWrite(attachsoilsensorpowerTo, LOW);//turn D7 "Off"
-    Serial.print("Soil Moisture = ");    
-    //get soil moisture value from the function below and print it
-    Serial.println(soilmoisture);
-    
-    // read the raw value from the light sensor:
-    int rawValue = analogRead(attachlightSensorTo);
-    Serial.print("Raw = ");
-    Serial.print(rawValue);
-    float logLux = rawValue * logRange / rawRange;
-    int luxvalue = pow(10, logLux);
-    Serial.print(" - Lux = ");
-    Serial.println(luxvalue);
-}
+        // read the values from the air humidity and temeprature sensor:
+        hum = dht1.readHumidity();
+        temp= dht1.readTemperature();
+        //Print temp and humidity values to serial monitor
+        Serial.print("Humidity: ");
+        Serial.print(hum);
+        Serial.print(" %, Temp: ");
+        Serial.print(temp);
+        Serial.println(" Celsius");
+        
+        // read the raw value from the soil sensor:
+        digitalWrite(soilPower1, HIGH);//turn D2 "On"
+        delay(10);//wait 10 milliseconds 
+        int soilmoisture = analogRead(attachsoilSensorTo);//Read the SIG value form sensor 
+        digitalWrite(attachsoilsensorpowerTo, LOW);//turn D7 "Off"
+        Serial.print("Soil Moisture = ");    
+        //get soil moisture value from the function below and print it
+        Serial.println(soilmoisture);
+        
+        // read the raw value from the light sensor:
+        int rawValue = analogRead(attachlightSensorTo);
+        Serial.print("Raw = ");
+        Serial.print(rawValue);
+        float logLux = rawValue * logRange / rawRange;
+        int luxvalue = pow(10, logLux);
+        Serial.print(" - Lux = ");
+        Serial.println(luxvalue);
+    } 
 
 };
 
 Plantenbak plantenbak1(lightsensorPin1,soilsensorPin1,soilPower1, DHTPIN1);
   
-void setup()
-{
-  Serial.begin(9600);
-  plantenbak1.setup();
-  
-  
+void setup() {
+    Serial.begin(9600);
+    plantenbak1.setup();
 }
 
-void loop()
-{
-  delay(3000);
-  plantenbak1.loop();
+void loop() {
+    delay(3000);
+    plantenbak1.loop();
 }
