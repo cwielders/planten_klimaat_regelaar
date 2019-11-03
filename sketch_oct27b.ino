@@ -1,3 +1,14 @@
+void setup() {
+    Serial.begin(9600);
+}
+
+void loop() {
+    delay(1000);
+    A a("Global scope message");
+    B b;
+    b.printMessage();
+}
+
 class A {
 
     String message;
@@ -8,33 +19,23 @@ class A {
     }
 
     void printMessage() {
-        Serial.print("yes");
+        Serial.print(message);
     }
 
 };
 
 class B {
 
-    A *a;
+    // A *a;
 
     public:
-    B(String message) {
-        A myA(message);
-        a = &myA;
+    B() {
+        // A myA(message);
+        // a = &myA;
     }
 
     void printMessage() {
-        a->printMessage();
+        a.printMessage();
     }
 
 };
-
-void setup() {
-    Serial.begin(9600);
-}
-
-B b("Mijn B message");
-void loop() {
-    delay(1000);
-    b.printMessage();
-}
