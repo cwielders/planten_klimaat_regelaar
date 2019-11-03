@@ -24,7 +24,7 @@ class B {
     }
 
     void printMessage() {
-        a->printMessage;
+        a->printMessage();
     }
 
 };
