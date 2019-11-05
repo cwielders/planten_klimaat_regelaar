@@ -1,38 +1,38 @@
 class Sensor {
 
-    String message;                     // private instance variable
+    String pin;                     // private instance variable
 
     public:
-    Sensor(String myMessage):
-        message(myMessage) {            // init field 'message' using 'myMessage' argument
+    Sensor(String myPin):
+        pin(myPin) {                // init field 'pin' using 'myPin' argument
     }
 
     void readvalue() {
-        Serial.print(message);
+        Serial.print("Meetwaarde ", pin);
     }
 
 };
 
 class PlantenBak {
 
-    Sensor a1;                          // private instance variable
-    Sensor a2;                          // private instance variable
+    Sensor s1;                      // private instance variable
+    Sensor s2;                      // private instance variable
 
     public:
-    PlantenBak(String message1, String message2): 
-        a1(message1), a2(message2) {    // init fields 'a1' and 'a2' using arguments
+    PlantenBak(String pin1, String pin2): 
+        s1(pin1), s2(pin2) {        // init fields 'a1' and 'a2' using arguments
     }
 
     void regelKlimaat() {
-        a1.readvalue();                 // will print out 'message1' passed to A instance in B constructor
+        s1.readvalue();             // will print out 'pin1' passed to Sensor instance in PlantenBak constructor
         Serial.print(" === ");
-        a2.readvalue();                 // will print out 'message2' passed to A instance in B constructor
+        s2.readvalue();             // will print out 'pin2' passed to Sensor instance in PlantenBak constructor
         Serial.print("\n\n");
     }
 
 };
 
-PlantenBak bak("Message_1", "Message_2");
+PlantenBak bak("Pin1", "Pin2");
 
 void setup() {
     Serial.begin(9600);
