@@ -1,9 +1,10 @@
 class A {
 
-    String message;
+    String message;                     // private instance variable
 
     public:
-    A(String myMessage): message(myMessage) {
+    A(String myMessage):
+        message(myMessage) {            // init field 'message' using 'myMessage' argument
     }
 
     void printMessage() {
@@ -14,17 +15,18 @@ class A {
 
 class B {
 
-    A a1;
-    A a2;
+    A a1;                               // private instance variable
+    A a2;                               // private instance variable
 
     public:
-    B(String message1, String message2) : a1(message1), a2(message2) {
+    B(String message1, String message2): 
+        a1(message1), a2(message2) {    // init fields 'a1' and 'a2' using arguments
     }
 
     void printMessage() {
-        a1.printMessage();
+        a1.printMessage();              // will print out 'message1' passed to A instance in B constructor
         Serial.print(" === ");
-        a2.printMessage();
+        a2.printMessage();              // will print out 'message2' passed to A instance in B constructor
         Serial.print("\n\n");
     }
 
