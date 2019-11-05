@@ -15,8 +15,8 @@ class Sensor {
 
 class PlantenBak {
 
-    Sensor a1;                               // private instance variable
-    Sensor a2;                               // private instance variable
+    Sensor a1;                          // private instance variable
+    Sensor a2;                          // private instance variable
 
     public:
     PlantenBak(String message1, String message2): 
