@@ -34,13 +34,13 @@ class LichtSensor {
     float logRange = 5.0;
 
     public:
-    Sensor(int pin) {
+    Lichtensor(int pin) {
         pin = pin;
         analogReference(EXTERNAL); 
     }
 
     // read the raw value from the light sensor:
-    String readValue() {
+    String readRawValue() {
         int rawValue = analogRead(pin);
         return(rawValue);
     }
@@ -81,12 +81,11 @@ class SoilHumiditySensor {
 
 class LuchtVochtigheidTemperatuurSensor {
 
-    DHT *myDht;
+    DHT dht;
 
     public:
     LuchtVochtigheidTemperatuurSensor(int pin, int type) {
-        DHT dht(pin, type);
-        myDht = dht;
+    dht(pin, type);
     }
    
     String readTempValue() {
@@ -100,56 +99,49 @@ class LuchtVochtigheidTemperatuurSensor {
 
 class Plantenbak {
   
-    SoilHumiditySensor *soilHumiditySensor;
-    LuchtVochtigheidTemperatuurSensor *luchtVochtigheidTemperatuurSensor;
-    LichtSensor *lichtSensor;
+    SoilHumiditySensor soilHumiditySensor;
+    LuchtVochtigheidTemperatuurSensor luchtVochtigheidTemperatuurSensor;
+    LichtSensor lichtSensor;
 
     public:
     Plantenbak(byte lightSensorPin, byte soilSensorPin, byte soilSensorPower, byte airHumTempSensorPin) {
         
-        lichtSensor = LichtSensor LichtSensor(lightsensorpin);
         lightSensorTo = Lightsensorpin;
         attachsoilSensorTo = soilSensorpin;
         attachsoilsensorpowerTo = soilSensorpower;
-        attachairhumtempSensorTo = airhumtempSensorpin;
+        attachairhumtempSensorTo = airhumtempSensorpin; 
+        soilHumiditySensor(attachsoilSensorTo, attachsoilsensorpowerTo);
+        luchtVochtigheidTemperatuurSensor(attachairhumtempSensorTo,DHT22);
+        lichtSensor(lightSensorTo);
     }
     
     void setup() {
     
-        dht1.begin();
-       
-        
+       luchtVochtigheidTemperatuurSensor.begin();
+      
     }
 
     void loop() {
 
-        // read the values from the air humidity and temeprature sensor:
-        hum = dht1.readHumidity();
-        temp= dht1.readTemperature();
-        //Print temp and humidity values to serial monitor
         Serial.print("Humidity: ");
-        Serial.print(hum);
+        Serial.print(luchtVochtigheidTemperatuurSensor.readHumidityValue);
         Serial.print(" %, Temp: ");
-        Serial.print(temp);
+        Serial.print(luchtVochtigheidTemperatuurSensor.readTempValue);
         Serial.println(" Celsius");
         
         // read the raw value from the soil sensor:
         digitalWrite(soilPower1, HIGH);//turn D2 "On"
         delay(10);//wait 10 milliseconds 
-        int soilmoisture = analogRead(attachsoilSensorTo);//Read the SIG value form sensor 
-        digitalWrite(attachsoilsensorpowerTo, LOW);//turn D7 "Off"
-        Serial.print("Soil Moisture = ");    
-        //get soil moisture value from the function below and print it
-        Serial.println(soilmoisture);
-        
+        Serial.print("Soil Moisture = ");  
+        Serial.println(soilHumiditySensor.readValue);
+               
         // read the raw value from the light sensor:
-        int rawValue = analogRead(attachlightSensorTo);
+       
         Serial.print("Raw = ");
-        Serial.print(rawValue);
-        float logLux = rawValue * logRange / rawRange;
-        int luxvalue = pow(10, logLux);
+        Serial.print(lichtSensor.readRawValue);
+        
         Serial.print(" - Lux = ");
-        Serial.println(luxvalue);
+        Serial.println(lichtSensor.readLogValue);
     }
 
 };
