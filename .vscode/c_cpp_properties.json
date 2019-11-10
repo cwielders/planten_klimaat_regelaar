@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "Win32",
+            "includePath": [
+                "C:\\Users\\camiel.wielders\\OneDrive - Thermo Fisher Scientific\\Documents\\Arduino\\libraries\\RTCLib_by_NeiroN",
+                "C:\\Users\\camiel.wielders\\OneDrive - Thermo Fisher Scientific\\Documents\\Arduino\\libraries\\Rtc_by_Makuna\\src",
+                "C:\\Users\\camiel.wielders\\OneDrive - Thermo Fisher Scientific\\Documents\\Arduino\\libraries\\Sodaq_DS3231\\src",
+                "C:\\Program Files (x86)\\Arduino\\tools\\**",
+                "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\**"
+            ],
+            "forcedInclude": [
+                "C:\\Program Files (x86)\\Arduino\\hardware\\arduino\\avr\\cores\\arduino\\Arduino.h"
+            ],
+            "intelliSenseMode": "msvc-x64"
+        }
+    ],
+    "version": 4
+}
