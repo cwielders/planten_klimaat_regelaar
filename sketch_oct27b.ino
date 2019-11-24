@@ -12,8 +12,8 @@
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
 
-float settingsPlantenbak[8] = {8, 21, 7, 8, 28, 18, 60, 90};// lampenaan, lampenuit, dauwaan, dauwuit, dag temperatuur, nacht temperatuur, dag vochtigheid, nacht vochtigheid)
-byte pinArray[7] ={A0, 3, A1, 10, 11, 12, 2}; //1soilsensorPin1, 2soilPower1, 3lightsensorPin1, 4lampenPin1, 5ventilatorpin1, 6vernevelaarpin1, 7dhtpin1
+float settingsPlantenbak[8] = {8, 21, 1, 8, 28, 18, 60, 90};// lampenaan, lampenuit, dauwaan, dauwuit, dag temperatuur, nacht temperatuur, dag vochtigheid, nacht vochtigheid)
+byte pinArray[7] = {A0, 3, A1, 10, 11, 12, 2}; //1soilsensorPin1, 2soilPower1, 3lightsensorPin1, 4lampenPin1, 5ventilatorpin1, 6vernevelaarpin1, 7dhtpin1
 //Variables pot humidity
 // int soilsensorPin1 = A0;//Declare a variable for the soil moisture sensor 
 // int soilPower1 = 3;//Variable for Soil moisture Power
@@ -271,7 +271,25 @@ class Klok {
         Serial.print(datestring);
     }
 };
+
+class Test {
     
+    byte a;
+    byte b;
+   
+    public:
+    Test(byte array[]){
+        a = array[0];
+        b = array[4];
+        
+    }
+    void loop(){
+        Serial.print(a);
+        Serial.print(b);  
+    }
+};
+
+   
 
 class Plantenbak {
   
@@ -291,49 +309,63 @@ class Plantenbak {
     boolean vernevelaarIsUit = true;
     float lampenAan;
     float lampenUit;
+    byte soilsensorPin;
+    byte soilPower;
+    byte lightsensorPin;
+    byte dhtPin;
     
     //1soilsensorPin1, 2soilPower1, 3lightsensorPin1, 4lampenPin1, 5ventilatorpin1, 6vernevelaarpin1, 7dhtpin1
-    
+    //1soilsensorPin1, 2soilPower1, 3lightsensorPin1, 4lampenPin1, 5ventilatorpin1, 6vernevelaarpin1, 7dhtpin1
     public:
     Plantenbak(byte pinArray[], float settingsPlantenbak[]):
-        soilHumiditySensor(pinArray[0], pinArray[1]),
-        lichtSensor(pinArray[2]),
-        luchtVochtigheidTemperatuurSensor(pinArray[6]),
-        lampen(pinArray[3], lampenAan, lampenUit)
-        // lampenAan = settingsPlantenbak[0],
-        // lampenUit = settingsPlantenbak[1],
-        // dauwAan = settingsPlantenbak[2],
-        // dauwUit = settingsPlantenbak[3],
-        // nachtTemperatuur = settingsPlantenbak[4],
-        // nachtTemperatuur = settingsPlantenbak[5],
-        // dagVochtigheid = settingsPlantenbak[6],
-        // nachtVochtigheid = settingsPlantenbak[7],
-        // ventilatorPin = pinArray[4],
-        // vernevelaarPin = pinArray[5],
-        // pinMode(vernevelaarPin, OUTPUT),
-        // pinMode(vernevelaarPin, OUTPUT),
-        // digitalWrite(ventilatorPin, LOW),
-        // digitalWrite(vernevelaarPin, LOW),
-        // Serial.print("plantenbak geinitieerd")
-        {}
-   
-    void setup(byte pinArray[], float settingsPlantenbak[]){
-        lampenAan = settingsPlantenbak[0];
-        lampenUit = settingsPlantenbak[1];
-        dauwAan = settingsPlantenbak[2];
-        dauwUit = settingsPlantenbak[3];
-        nachtTemperatuur = settingsPlantenbak[4];
-        nachtTemperatuur = settingsPlantenbak[5];
-        dagVochtigheid = settingsPlantenbak[6];
-        nachtVochtigheid = settingsPlantenbak[7];
-        ventilatorPin = pinArray[4];
-        vernevelaarPin = pinArray[5];
-        pinMode(vernevelaarPin, OUTPUT);
-        pinMode(vernevelaarPin, OUTPUT);
-        digitalWrite(ventilatorPin, LOW);
-        digitalWrite(vernevelaarPin, LOW);
-        Serial.print("plantenbak geinitieerd");
-        }
+        
+        lampenAan = settingsPlantenbak[0],
+        lampenUit = settingsPlantenbak[1],       
+        dauwAan = settingsPlantenbak[2],
+        dauwUit = settingsPlantenbak[3],
+        nachtTemperatuur = settingsPlantenbak[4],
+        nachtTemperatuur = settingsPlantenbak[5],
+        dagVochtigheid = settingsPlantenbak[6],
+        nachtVochtigheid = settingsPlantenbak[7],
+
+        soilsensorPin = pinArray[0],
+        soilPower = pinArray[1],
+        lightsensorPin = pinArray[2],
+        lampenPin = pinArray[3],
+        ventilatorPin = pinArray[4],
+        vernevelaarPin = pinArray[5],
+        dhtPin = pinArray[6],
+
+        soilHumiditySensor(soilsensorPin, soilPower),
+        lichtSensor(lightsensorPin),
+        luchtVochtigheidTemperatuurSensor(dhtPin),
+        lampen(lampenPin, lampenAan, lampenUit),
+        pinMode(vernevelaarPin, OUTPUT),
+        pinMode(vernevelaarPin, OUTPUT),
+        digitalWrite(ventilatorPin, LOW),
+        digitalWrite(vernevelaarPin, LOW)
+
+    {
+        Serial.print("plantenbak geinitieerd")
+    }
+
+    // void setup(byte pinArray[], float settingsPlantenbak[]){
+    //     lampenAan = settingsPlantenbak[0],
+    //     lampenUit = settingsPlantenbak[1],
+    //     dauwAan = settingsPlantenbak[2];
+    //     dauwUit = settingsPlantenbak[3];
+    //     nachtTemperatuur = settingsPlantenbak[4];
+    //     nachtTemperatuur = settingsPlantenbak[5];
+    //     dagVochtigheid = settingsPlantenbak[6];
+    //     nachtVochtigheid = settingsPlantenbak[7];
+    //     ventilatorPin = pinArray[4];
+    //     vernevelaarPin = pinArray[5];
+    //     pinMode(vernevelaarPin, OUTPUT);
+    //     pinMode(vernevelaarPin, OUTPUT);
+    //     digitalWrite(ventilatorPin, LOW);
+    //     digitalWrite(vernevelaarPin, LOW);
+    //     Serial.print("plantenbak geinitieerd");
+    //     }
 
     void loop(RtcDateTime RtcObjectHuidigeTijd) {
         
@@ -481,13 +513,15 @@ class Plantenbak {
 
 };
 
-Klok klok;
+Test test(pinArray);
+Klok klok();
 Plantenbak plantenbak1(pinArray, settingsPlantenbak);
 
 void setup()
 {
     Serial.begin(9600);
     klok.setup();
+    plantenbak.setup();
     plantenbak1.setup(pinArray, settingsPlantenbak);
 }
   
@@ -497,9 +531,9 @@ void loop()
     
     RtcDateTime rtcTijdObject = klok.getTime();
     //int[2] uurMinuutHuidig = klok.getUurMinuutNu();
-    plantenbak1.loop(rtcTijdObject); //, uurMinuutHuidig
+    //plantenbak1.loop(rtcTijdObject); //, uurMinuutHuidig
     delay(3000);
-
+    test.loop();
 }
 
 
