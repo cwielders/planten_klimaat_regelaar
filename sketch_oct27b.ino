@@ -2,12 +2,27 @@
 #include <Wire.h> // must be included here so that Arduino library object file references work
 #include <RtcDS3231.h>
 
-
-
 #include <DHT.h>
 #include <DHT_U.h>
 
 #define DHTPIN1 2
+
+#define IDX_LAPENAAN 0
+#define IDX_LAMPENUIT 1
+#define IDX_DAUWAAN 2
+#define IDX_DAUWUIT 3
+#define IDX_DAGTEMP 4
+#define IDX_NACHTTEMP 5
+#define IDX_DAGVOCHT 6
+#define IDX_NACHTVOCHT 7
+
+#define IDX_BAK1_PIN_SOILPIN 0
+#define IDX_BAK1_PIN_SOILPOWER 1
+#define IDX_BAK1_PIN_LIGHTPIN 2
+#define IDX_BAK1_PIN_LAMPEN 3
+#define IDX_BAK1_PIN_VENTILATOR 4
+#define IDX_BAK1_PIN_VERNEVELAAR 5
+#define IDX_BAK1_PIN_DHT 6
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
@@ -19,7 +34,7 @@ byte pinArray[7] = {A0, 3, A1, 10, 11, 12, 2}; //1soilsensorPin1, 2soilPower1, 3
 // int soilPower1 = 3;//Variable for Soil moisture Power
 // //Variables light sensor
 // int lightsensorPin1 = A1; // select the input pin for the potentiometer
-// //Variables lampen
+// //Variables lampenpowerPinpowerPinpowerPinpowerPinpowerPin
 // byte lampenPin1 = 10;
 
 
@@ -31,8 +46,8 @@ class LichtSensor {
     float logRange = 5.0;
 
     public:
-    LichtSensor(int pin) {
-        pin = pin;
+    LichtSensor(int myPin) {
+        pin = myPin;
         analogReference(EXTERNAL); 
         Serial.print("lichtsensor geinitialiseerd");
     }
@@ -55,16 +70,15 @@ class LichtSensor {
 
 class SoilHumiditySensor {
    
-    int pin;
-    int powerPin;
+    byte pin;
+    byte powerPin;
    
     public:
-    SoilHumiditySensor(int pin, int powerPin) {
-        pin = pin;
-        powerPin = powerPin;
+    SoilHumiditySensor(byte myPin, byte myPowerPin) {
+        pin = myPin;
+        powerPin = myPowerPin;
         pinMode(powerPin, OUTPUT);//Set D2 as an OUTPUT
         digitalWrite(powerPin, LOW);//Set to LOW so no power is flowing through the sensor
-        Serial.print("SoilHumiditySensor geinitialiseerd");
     }
 
     // read the raw value from the soil sensor:
@@ -86,7 +100,6 @@ class LuchtVochtigheidTemperatuurSensor {
     LuchtVochtigheidTemperatuurSensor(byte pin) :
     dht(pin, DHT22) {
     dht.begin();
-    Serial.print("LuchtVochtigheidTemperatuurSensor geinitialiseerd");     
     }
 
     float readTempValue() {
@@ -148,10 +161,10 @@ class Klok {
     RtcDS3231<TwoWire> Rtc;
     
     public:
-    Klok():
-    Rtc(Wire)
-    //Serial.print("Klok geinitieerd")
-    {}
+    Klok(): Rtc(Wire)
+    {
+        Serial.print("Klok geinitieerd");
+    }
 
     void setup() {
         Serial.print("compiled: ");
@@ -171,8 +184,8 @@ class Klok {
                 // we have a communications error
                 // see https://www.arduino.cc/en/Reference/WireEndTransmission for 
                 // what the number means
-                // Serial.print("RTC communications error = ");
-                // Serial.println(Rtc.LastError());
+                 Serial.print("RTC communications error = ");
+                 Serial.println(Rtc.LastError());
             }
             else
             {
@@ -180,7 +193,7 @@ class Klok {
                 //    1) first time you ran and the device wasn't running yet
                 //    2) the battery on the device is low or even missing
 
-                // Serial.println("RTC lost confidence in the DateTime!");
+                 Serial.println("RTC lost confidence in the DateTime!");
 
                 // following line sets the RTC to the date & time this sketch was compiled
                 // it will also reset the valid flag internally unless the Rtc device is
@@ -192,28 +205,28 @@ class Klok {
 
         if (!Rtc.GetIsRunning())
         {
-            // Serial.println("RTC was not actively running, starting now");
+             Serial.println("RTC was not actively running, starting now");
             Rtc.SetIsRunning(true);
         }
 
         RtcDateTime now = Rtc.GetDateTime();
         if (now < compiled) 
         {
-            // printDateTime(compiled);
-            // printDateTime(now);
-            // Serial.println("RTC is older than compile time!  (Updating DateTime)");
+             printDateTime(compiled);
+             printDateTime(now);
+             Serial.println("RTC is older than compile time!  (Updating DateTime)");
 
             Rtc.SetDateTime(compiled);
-            // printDateTime(compiled);
+             printDateTime(compiled);
 
         }
         else if (now > compiled) 
         {
-            // Serial.println("RTC is newer than compile time. (this is expected)");
+             Serial.println("RTC is newer than compile time. (this is expected)");
         }
         else if (now == compiled) 
         {
-            // Serial.println("RTC is the same as compile time! (not expected but all is fine)");
+             Serial.println("RTC is the same as compile time! (not expected but all is fine)");
         }
 
         // never assume the Rtc was last configured by you, so
@@ -227,7 +240,7 @@ class Klok {
     //     int minuutNu = now.Minute();
     //     int huidigeTijdUurMinuut[2] = {uurNu, minuutNu};
     //     return(huidigeTijdUurMinuut);
-    // }
+    //}
 
     RtcDateTime getTime(){
         if (!Rtc.IsDateTimeValid()) 
@@ -251,7 +264,7 @@ class Klok {
         RtcDateTime now = Rtc.GetDateTime();
         printDateTime(now);
         Serial.println();
-       
+
         return(now);
     }
     
@@ -272,100 +285,42 @@ class Klok {
     }
 };
 
-class Test {
-    
-    byte a;
-    byte b;
-   
-    public:
-    Test(byte array[]){
-        a = array[0];
-        b = array[4];
-        
-    }
-    void loop(){
-        Serial.print(a);
-        Serial.print(b);  
-    }
-};
-
-   
-
 class Plantenbak {
-  
+
     SoilHumiditySensor soilHumiditySensor;
     LuchtVochtigheidTemperatuurSensor luchtVochtigheidTemperatuurSensor;
     LichtSensor lichtSensor;
     Lampen lampen;
-    float dauwAan;
-    float dauwUit;
-    float dagTemperatuur;
-    float nachtTemperatuur;
-    float dagVochtigheid;
-    float nachtVochtigheid;
-    byte ventilatorPin;
-    byte vernevelaarPin;
     boolean ventilatorIsUit = true;
     boolean vernevelaarIsUit = true;
-    float lampenAan;
-    float lampenUit;
-    byte soilsensorPin;
-    byte soilPower;
-    byte lightsensorPin;
-    byte dhtPin;
-    
-    //1soilsensorPin1, 2soilPower1, 3lightsensorPin1, 4lampenPin1, 5ventilatorpin1, 6vernevelaarpin1, 7dhtpin1
-    //1soilsensorPin1, 2soilPower1, 3lightsensorPin1, 4lampenPin1, 5ventilatorpin1, 6vernevelaarpin1, 7dhtpin1
+    byte (&pins)[7];
+    float (&settings)[8];
+
+    // lampenaan, lampenuit, dauwaan, dauwuit, dag temperatuur, nacht temperatuur, dag vochtigheid, nacht vochtigheid)
+    // 1soilsensorPin1, 2soilPower1, 3lightsensorPin1, 4lampenPin1, 5ventilatorpin1, 6vernevelaarpin1, 7dhtpin1 
     public:
-    Plantenbak(byte pinArray[], float settingsPlantenbak[]):
-        
-        lampenAan = settingsPlantenbak[0],
-        lampenUit = settingsPlantenbak[1],       
-        dauwAan = settingsPlantenbak[2],
-        dauwUit = settingsPlantenbak[3],
-        nachtTemperatuur = settingsPlantenbak[4],
-        nachtTemperatuur = settingsPlantenbak[5],
-        dagVochtigheid = settingsPlantenbak[6],
-        nachtVochtigheid = settingsPlantenbak[7],
-
-        soilsensorPin = pinArray[0],
-        soilPower = pinArray[1],
-        lightsensorPin = pinArray[2],
-        lampenPin = pinArray[3],
-        ventilatorPin = pinArray[4],
-        vernevelaarPin = pinArray[5],
-        dhtPin = pinArray[6],
-
-        soilHumiditySensor(soilsensorPin, soilPower),
-        lichtSensor(lightsensorPin),
-        luchtVochtigheidTemperatuurSensor(dhtPin),
-        lampen(lampenPin, lampenAan, lampenUit),
-        pinMode(vernevelaarPin, OUTPUT),
-        pinMode(vernevelaarPin, OUTPUT),
-        digitalWrite(ventilatorPin, LOW),
-        digitalWrite(vernevelaarPin, LOW)
-
+    Plantenbak(byte (&pinArray)[7], float (&settingsPlantenbak)[8]) :
+        pins(pinArray), settings(settingsPlantenbak),
+        soilHumiditySensor(pins[IDX_BAK1_PIN_SOILPIN], pins[IDX_BAK1_PIN_SOILPOWER]),
+        lichtSensor(pins[IDX_BAK1_PIN_LIGHTPIN]),
+        luchtVochtigheidTemperatuurSensor(pins[IDX_BAK1_PIN_DHT]),
+        lampen(pins[IDX_BAK1_PIN_LAMPEN], settings[IDX_LAPENAAN], settings[IDX_LAMPENUIT])
     {
-        Serial.print("plantenbak geinitieerd")
-    }
 
-    // void setup(byte pinArray[], float settingsPlantenbak[]){
-    //     lampenAan = settingsPlantenbak[0],
-    //     lampenUit = settingsPlantenbak[1],
-    //     dauwAan = settingsPlantenbak[2];
-    //     dauwUit = settingsPlantenbak[3];
-    //     nachtTemperatuur = settingsPlantenbak[4];
-    //     nachtTemperatuur = settingsPlantenbak[5];
-    //     dagVochtigheid = settingsPlantenbak[6];
-    //     nachtVochtigheid = settingsPlantenbak[7];
-    //     ventilatorPin = pinArray[4];
-    //     vernevelaarPin = pinArray[5];
-    //     pinMode(vernevelaarPin, OUTPUT);
-    //     pinMode(vernevelaarPin, OUTPUT);
-    //     digitalWrite(ventilatorPin, LOW);
-    //     digitalWrite(vernevelaarPin, LOW);
-    //     Serial.print("plantenbak geinitieerd");
-    //     }
+        
+        // soilHumiditySensor(pins[IDX_BAK1_PIN_SOILPIN], pins[IDX_BAK1_PIN_SOILPOWER]);
+        // lichtSensor(pins[IDX_BAK1_PIN_LIGHTPIN]);
+        // luchtVochtigheidTemperatuurSensor(pins[IDX_BAK1_PIN_DHT]);
+        // lampen(pins[IDX_BAK1_PIN_LAMPEN], settings[IDX_LAPENAAN], settings[IDX_LAMPENUIT]);
+    }
+    
+    void setup() {
+        pinMode(pins[IDX_BAK1_PIN_VERNEVELAAR], OUTPUT);
+        digitalWrite(pins[IDX_BAK1_PIN_VERNEVELAAR], LOW);
+
+        digitalWrite(pins[IDX_BAK1_PIN_VENTILATOR], LOW);
+        Serial.print("plantenbak geinitieerd");
+    }
 
     void loop(RtcDateTime RtcObjectHuidigeTijd) {
         
@@ -381,165 +336,151 @@ class Plantenbak {
         Serial.print("Soil Moisture = ");  
         Serial.println(soilHumiditySensor.readValue());
         
-        // read the raw value from the light sensor:
-        Serial.print("Raw = ");
-        Serial.print(lichtSensor.readRawValue());
+        // // read the raw value from the light sensor:
+        // Serial.print("Raw = ");
+        // Serial.print(lichtSensor.readRawValue());
         
         Serial.print(" - Lux = ");
-
         Serial.println(lichtSensor.readLogValue());
     
         lampen.regelLicht(RtcObjectHuidigeTijd);
-        dauw(RtcObjectHuidigeTijd, temperatuur, luchtVochtigheid);
-        increaseHumidity(RtcObjectHuidigeTijd, temperatuur, luchtVochtigheid);
-        decreaseTemperature(RtcObjectHuidigeTijd, temperatuur, luchtVochtigheid);
+        // dauw(RtcObjectHuidigeTijd, temperatuur, luchtVochtigheid);
+        // increaseHumidity(RtcObjectHuidigeTijd, temperatuur, luchtVochtigheid);
+        // decreaseTemperature(RtcObjectHuidigeTijd, temperatuur, luchtVochtigheid);
     }
 
-    void decreaseTemperature(RtcDateTime rtc, float temp, float vocht){
+    // void decreaseTemperature(RtcDateTime rtc, float temp, float vocht){
 
-        int temperatuur = temp;
-        int luchtVochtigheid = vocht;//vragen aan pim of dauwUit hier hernoemd moet worden
-        RtcDateTime RtcObjectHuidigeTijd = rtc;//vragen aan pim of dauwUit hier hernoemd moet worden
-        int maxTemperatuur;
-        int maxVochtigheid;
+    //     int temperatuur = temp;
+    //     int luchtVochtigheid = vocht;//vragen aan pim of dauwUit hier hernoemd moet worden
+    //     RtcDateTime RtcObjectHuidigeTijd = rtc;//vragen aan pim of dauwUit hier hernoemd moet worden
+    //     int maxTemperatuur;
+    //     int maxVochtigheid;
         
-        // pinMode(vernevelaarPin, OUTPUT); //in constructor of setup??
-        digitalWrite(vernevelaarPin, LOW); //in constructor??
-        int uurNu = RtcObjectHuidigeTijd.Second();// terugveranderen naat hour()
-        int minuutNu = RtcObjectHuidigeTijd.Minute();
-        float uurMinuutNu = uurNu + (minuutNu/60);
-        //float uurMinuutNu = getTime(RtcObjectHuidigeTijd);
+    //     // pinMode(vernevelaarPin, OUTPUT); //in constructor of setup??
+    //     digitalWrite(vernevelaarPin, LOW); //in constructor??
+    //     int uurNu = RtcObjectHuidigeTijd.Second();// terugveranderen naat hour()
+    //     int minuutNu = RtcObjectHuidigeTijd.Minute();
+    //     float uurMinuutNu = uurNu + (minuutNu/60);
+    //     //float uurMinuutNu = getTime(RtcObjectHuidigeTijd);
 
-        if (uurMinuutNu >= lampenAan && uurMinuutNu <= lampenUit){
-            maxVochtigheid = dagVochtigheid;
-            maxTemperatuur = dagTemperatuur;
-        }
+    //     if (uurMinuutNu >= lampenAan && uurMinuutNu <= lampenUit){
+    //         maxVochtigheid = dagVochtigheid;
+    //         maxTemperatuur = dagTemperatuur;
+    //     }
         
-        if (uurMinuutNu <= lampenAan || uurMinuutNu >= lampenUit) {
-            maxVochtigheid = nachtVochtigheid;
-            maxTemperatuur = nachtTemperatuur;
-        }
+    //     if (uurMinuutNu <= lampenAan || uurMinuutNu >= lampenUit) {
+    //         maxVochtigheid = nachtVochtigheid;
+    //         maxTemperatuur = nachtTemperatuur;
+    //     }
 
-        if (temperatuur > maxTemperatuur) {
+    //     if (temperatuur > maxTemperatuur) {
             
-            digitalWrite(ventilatorPin, HIGH);
-            Serial.print("vernevelaar aangeschakeld vanwege dauw");
-            ventilatorIsUit = false;
-            //helft licht uit
-            if (luchtVochtigheid < maxVochtigheid){
-                digitalWrite(vernevelaarPin, HIGH);
-                Serial.print("vernevelaar aangeschakeld vanwege hoge temperatuur");
-                vernevelaarIsUit = false;// vragen aan pim : is hij dan false in alle methodes van de hele klasse of alleen in deze methode?
-            }
+    //         digitalWrite(ventilatorPin, HIGH);
+    //         Serial.print("vernevelaar aangeschakeld vanwege dauw");
+    //         ventilatorIsUit = false;
+    //         //helft licht uit
+    //         if (luchtVochtigheid < maxVochtigheid){
+    //             digitalWrite(vernevelaarPin, HIGH);
+    //             Serial.print("vernevelaar aangeschakeld vanwege hoge temperatuur");
+    //             vernevelaarIsUit = false;// vragen aan pim : is hij dan false in alle methodes van de hele klasse of alleen in deze methode?
+    //         }
             
             
-        }
+    //     }
         
         
-    }
+    // }
     
-    void increaseHumidity(RtcDateTime huidigeTijd, float temperatuur, float luchtVochtigheid){
+    // void increaseHumidity(RtcDateTime huidigeTijd, float temperatuur, float luchtVochtigheid){
 
-        // temperatuur = temperatuur;
-        // luchtVochtigheid = luchtVochtigheid;//vragen aan pim of dauwUit hier hernoemd moet worden
-        // RtcObjectHuidigeTijd = RtcObjectHuidigeTijd;//vragen aan pim of dauwUit hier hernoemd moet worden
-        int maxVochtigheid;
+    //     // temperatuur = temperatuur;
+    //     // luchtVochtigheid = luchtVochtigheid;//vragen aan pim of dauwUit hier hernoemd moet worden
+    //     // RtcObjectHuidigeTijd = RtcObjectHuidigeTijd;//vragen aan pim of dauwUit hier hernoemd moet worden
+    //     int maxVochtigheid;
         
-        int uurNu = huidigeTijd.Second();// terugveranderen naat hour()
-        int minuutNu = huidigeTijd.Minute();
-        float uurMinuutNu = uurNu + (minuutNu/60);
+    //     int uurNu = huidigeTijd.Second();// terugveranderen naat hour()
+    //     int minuutNu = huidigeTijd.Minute();
+    //     float uurMinuutNu = uurNu + (minuutNu/60);
 
-        // float getTime(RtcDateTime huidigeTijd) {
-        //         int uurNu = huidigeTijd.Second();
-        //         int minuutNu = huidigeTijd.Minute();
-        //         return(uurNu + (minuutNu/60));
-        //     }
-        if (uurMinuutNu >= lampenAan && uurMinuutNu <= lampenUit){
-            maxVochtigheid = dagVochtigheid;
-        }
+    //     // float getTime(RtcDateTime huidigeTijd) {
+    //     //         int uurNu = huidigeTijd.Second();
+    //     //         int minuutNu = huidigeTijd.Minute();
+    //     //         return(uurNu + (minuutNu/60));
+    //     //     }
+    //     if (uurMinuutNu >= lampenAan && uurMinuutNu <= lampenUit){
+    //         maxVochtigheid = dagVochtigheid;
+    //     }
         
-        if (uurMinuutNu <= lampenAan || uurMinuutNu >= lampenUit) {
-            maxVochtigheid = nachtVochtigheid;
-        }
+    //     if (uurMinuutNu <= lampenAan || uurMinuutNu >= lampenUit) {
+    //         maxVochtigheid = nachtVochtigheid;
+    //     }
 
-        if (vernevelaarIsUit && luchtVochtigheid < maxVochtigheid) {
-            digitalWrite(vernevelaarPin, HIGH);
-            Serial.print("vernevelaar aangeschakeld vanwege lage luchtvochtigheid");
-            vernevelaarIsUit = false;// vragen aan pim : is hij dan false in de hele klasse of alleen in deze methode?
-        }
+    //     if (vernevelaarIsUit && luchtVochtigheid < maxVochtigheid) {
+    //         digitalWrite(vernevelaarPin, HIGH);
+    //         Serial.print("vernevelaar aangeschakeld vanwege lage luchtvochtigheid");
+    //         vernevelaarIsUit = false;// vragen aan pim : is hij dan false in de hele klasse of alleen in deze methode?
+    //     }
         
-        if (!vernevelaarIsUit && luchtVochtigheid > maxVochtigheid) {
-            digitalWrite(vernevelaarPin, LOW); 
-            Serial.print("vernevelaar uitgeschakeld vanwege voldoende luchtvochtigheid"); 
-            vernevelaarIsUit = true;
-        }
-    }
+    //     if (!vernevelaarIsUit && luchtVochtigheid > maxVochtigheid) {
+    //         digitalWrite(vernevelaarPin, LOW); 
+    //         Serial.print("vernevelaar uitgeschakeld vanwege voldoende luchtvochtigheid"); 
+    //         vernevelaarIsUit = true;
+    //     }
+    // }
 
    
-    void dauw(RtcDateTime now, float temperatuur, float luchtVochtigheid){
+    // void dauw(RtcDateTime now, float temperatuur, float luchtVochtigheid){
         
-        //temperatuur = temperatuur;
-        //luchtVochtigheid = luchtVochtigheid;//vragen aan pim of dauwUit hier hernoemd moet worden
+    //     //temperatuur = temperatuur;
+    //     //luchtVochtigheid = luchtVochtigheid;//vragen aan pim of dauwUit hier hernoemd moet worden
         
-        // pinMode(ventilatorPin, OUTPUT);//in constructor??
-        // digitalWrite(ventilatorPin, LOW);//in constructor??
-        // pinMode(vernevelaarPin, OUTPUT);//in constructor??
-        // digitalWrite(vernevelaarPin, LOW);//in constructor??
-        int uurNu = now.Second();// terugveranderen naat hour()
-        int minuutNu = now.Minute();
-        float uurMinuutNu = uurNu + (minuutNu/60);
+    //     // pinMode(ventilatorPin, OUTPUT);//in constructor??
+    //     // digitalWrite(ventilatorPin, LOW);//in constructor??
+    //     // pinMode(vernevelaarPin, OUTPUT);//in constructor??
+    //     // digitalWrite(vernevelaarPin, LOW);//in constructor??
+    //     int uurNu = now.Second();// terugveranderen naat hour()
+    //     int minuutNu = now.Minute();
+    //     float uurMinuutNu = uurNu + (minuutNu/60);
 
-        if (vernevelaarIsUit && uurMinuutNu >= dauwAan && uurMinuutNu <= dauwUit && luchtVochtigheid < nachtVochtigheid) {
-            digitalWrite(vernevelaarPin, HIGH);
-            Serial.print("vernevelaar aangeschakeld vanwege dauw");
-            vernevelaarIsUit = false;
-        }
-        if (!vernevelaarIsUit && (uurMinuutNu <= dauwAan || uurMinuutNu >= dauwUit || luchtVochtigheid > nachtVochtigheid )) {
-            digitalWrite(vernevelaarPin, LOW); 
-            Serial.print("vernevelaar uitgeschakeld vanwege dauw afgelopen"); 
-            vernevelaarIsUit = true;
-        }
-        if (ventilatorIsUit && uurMinuutNu >= dauwAan && uurMinuutNu <= dauwUit && temperatuur > nachtTemperatuur) {
-            digitalWrite(ventilatorPin, HIGH);
-            Serial.print("vernevelaar aangeschakeld vanwege dauw");
-            ventilatorIsUit = false;
-        }
-        if (!ventilatorIsUit && (uurMinuutNu <= dauwAan || uurMinuutNu >= dauwUit || temperatuur > nachtTemperatuur)) {
-            digitalWrite(ventilatorPin, LOW); 
-            Serial.print("vernevelaar uitgeschakeld vanwege dauw afgelopen"); 
-            ventilatorIsUit = true;
-        }
-    }
+    //     if (vernevelaarIsUit && uurMinuutNu >= dauwAan && uurMinuutNu <= dauwUit && luchtVochtigheid < nachtVochtigheid) {
+    //         digitalWrite(vernevelaarPin, HIGH);
+    //         Serial.print("vernevelaar aangeschakeld vanwege dauw");
+    //         vernevelaarIsUit = false;
+    //     }
+    //     if (!vernevelaarIsUit && (uurMinuutNu <= dauwAan || uurMinuutNu >= dauwUit || luchtVochtigheid > nachtVochtigheid )) {
+    //         digitalWrite(vernevelaarPin, LOW); 
+    //         Serial.print("vernevelaar uitgeschakeld vanwege dauw afgelopen"); 
+    //         vernevelaarIsUit = true;
+    //     }
+    //     if (ventilatorIsUit && uurMinuutNu >= dauwAan && uurMinuutNu <= dauwUit && temperatuur > nachtTemperatuur) {
+    //         digitalWrite(ventilatorPin, HIGH);
+    //         Serial.print("vernevelaar aangeschakeld vanwege dauw");
+    //         ventilatorIsUit = false;
+    //     }
+    //     if (!ventilatorIsUit && (uurMinuutNu <= dauwAan || uurMinuutNu >= dauwUit || temperatuur > nachtTemperatuur)) {
+    //         digitalWrite(ventilatorPin, LOW); 
+    //         Serial.print("vernevelaar uitgeschakeld vanwege dauw afgelopen"); 
+    //         ventilatorIsUit = true;
+    //     }
+    // }
 
 };
 
-Test test(pinArray);
-Klok klok();
+Klok klok;
 Plantenbak plantenbak1(pinArray, settingsPlantenbak);
 
 void setup()
 {
     Serial.begin(9600);
     klok.setup();
-    plantenbak.setup();
-    plantenbak1.setup(pinArray, settingsPlantenbak);
+    plantenbak1.setup();
 }
-  
 
 void loop()
 {
-    
-    RtcDateTime rtcTijdObject = klok.getTime();
-    //int[2] uurMinuutHuidig = klok.getUurMinuutNu();
-    //plantenbak1.loop(rtcTijdObject); //, uurMinuutHuidig
+    RtcDateTime tijd = klok.getTime();
+    Serial.println(tijd);
+    plantenbak1.loop(tijd);
     delay(3000);
-    test.loop();
 }
-
-
-
-
-
-
-
-    
