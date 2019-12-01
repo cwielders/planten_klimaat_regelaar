@@ -30,8 +30,8 @@
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
 
-float settingsPlantenbak[10] = {8, 21, 1, 8, 28, 18, 60, 90, 12, 14};// lampenaan, lampenuit, dauwaan, dauwuit, dag temperatuur, nacht temperatuur, dag vochtigheid, nacht vochtigheid, bewolkingaan, bewolkinguit)
-byte pinArray[8] = {A0, 3, A1, 4, 5, 6, 2, 7}; //1soilsensorPin1, 2soilPower1, 3lightsensorPin1, 4lampenPin1, 5ventilatorpin1, 6vernevelaarpin1, 7dhtpin1
+float settingsPlantenbak[10] = {8, 21, 7, 8, 28, 18, 60, 90, 12, 14};// lampenaan, lampenuit, dauwaan, dauwuit, dag temperatuur, nacht temperatuur, dag vochtigheid, nacht vochtigheid, bewolkingaan, bewolkinguit)
+byte pinArray[8] = {A0, 3, A1, 4, 5, 6, 2, 7}; //1soilsensorPin1, 2soilPower1, 3lightsensorPin1, 4lampenPin1, 5ventilatorpin1, 6vernevelaarpin1, 7dhtpin, lampenpin21
 
 
 class LichtSensor {
@@ -157,7 +157,7 @@ class KlimaatRegelaar {
     lampenPin1 = myLampenPin1;
     lampenPin2 = myLampenPin2;
     nevelPin = myNevelPin;
-    ventilatorPin = myVentilatorPin;
+    ventilatorPin = myVentilatorPin; 
     byte dagVochtigheid;
     byte nachtVochtigheid;
     startDag = settings[0];
@@ -172,6 +172,27 @@ class KlimaatRegelaar {
     eindBewolking = settings[9];
     // lampenaan, lampenuit, dauwaan, dauwuit, dag temperatuur, nacht temperatuur, dag vochtigheid, nacht vochtigheid, bewolkingaan, bewolkinguit)
     }
+
+void initialisatie() {
+    Serial.println("KlimaatRegelaar geinitialiseerd");
+    Serial.print("lampenPin1 = ");
+    Serial.println(lampenPin1);
+    Serial.print("lampenPin1 = ");
+    Serial.println(lampenPin2);
+    Serial.print("nevelPin = ");
+    Serial.println(nevelPin);
+    Serial.print("ventilatorPin = ");
+    Serial.println(ventilatorPin);
+    Serial.println();
+    Serial.print("startDag = ");
+    Serial.println(settings[0]);
+    Serial.print("starNacht = ");
+    Serial.println(settings[1]);
+    Serial.print("startDauw = ");
+    Serial.println(settings[2]);
+    Serial.print("eindDauw = ");
+    Serial.println(settings[3]);
+}
 };
 
 // #define IDX_LAPENAAN 0
@@ -360,7 +381,7 @@ class Klok {
 
 class Plantenbak {
 
-    //KlimaatRegelaar klimaatRegelaar;
+    KlimaatRegelaar klimaatRegelaar;
     SoilHumiditySensor soilHumiditySensor;
     LuchtVochtigheidTemperatuurSensor luchtVochtigheidTemperatuurSensor;
     LichtSensor lichtSensor;
@@ -381,16 +402,18 @@ class Plantenbak {
     //byte mylampenPin1, byte mylampenPin2, byte mynevelPin, byte myventilatorPin,
     
     public:
-    Plantenbak(byte pin0, byte pin1, byte pin2,  byte pin3, byte pin4, byte pin5, byte pin6, byte pin7, float (&settingsPlantenbak)[10]) :
+     Plantenbak(byte pin0, byte pin1, byte pin2,  byte pin3, byte pin4, byte pin5, byte pin6, byte pin7, float (&settingsPlantenbak)[10]) :
         //pins(pinArray), 
         settings(settingsPlantenbak),
         soilHumiditySensor(pin0, pin1),
         lichtSensor(pin2),
-        luchtVochtigheidTemperatuurSensor(pin6)
-        // lampen(pins[IDX_BAK1_PIN_LAMPEN], settings[IDX_LAPENAAN], settings[IDX_LAMPENUIT])//,
-        //klimaatRegelaar(pins[IDX_BAK1_PIN_LAMPEN1], pins[IDX_BAK1_PIN_LAMPEN2], pins[IDX_BAK1_PIN_VERNEVELAAR], pins[ IDX_BAK1_PIN_VENTILATOR], settings)
+
+        luchtVochtigheidTemperatuurSensor(pin6),
+      
+        klimaatRegelaar(pin3 , pin7, pin5, pin4, settings)
     {}
-    
+    //1soilsensorPin1, 2soilPower1, 3lightsensorPin1, 4lampenPin1, 5ventilatorpin1, 6vernevelaarpin1, 7dhtpin1
+
     void setup() {
         // Serial.println(pins[0]);
         // Serial.println(pins[1]);
@@ -403,6 +426,7 @@ class Plantenbak {
         lichtSensor.initialisatie();
         soilHumiditySensor.initialisatie();
         luchtVochtigheidTemperatuurSensor.initialisatie();
+        klimaatRegelaar.initialisatie();
 
         // pinMode(pins[IDX_BAK1_PIN_VERNEVELAAR], OUTPUT);
         // digitalWrite(pins[IDX_BAK1_PIN_VERNEVELAAR], LOW);
