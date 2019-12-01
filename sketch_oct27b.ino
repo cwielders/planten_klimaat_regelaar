@@ -107,7 +107,7 @@ class LuchtVochtigheidTemperatuurSensor {
 
     public:
     LuchtVochtigheidTemperatuurSensor(byte myPin) :
-    dht(pin, DHT22) {
+    dht(2, DHT22) {
     dht.begin();
     pin = myPin;
     }
