@@ -107,7 +107,7 @@ class LuchtVochtigheidTemperatuurSensor {
 
     public:
     LuchtVochtigheidTemperatuurSensor(byte myPin) :
-    dht(2, DHT22) {
+    dht(myPin, DHT22) {
     dht.begin();
     pin = myPin;
     }
@@ -360,14 +360,14 @@ class Klok {
 
 class Plantenbak {
 
-    KlimaatRegelaar klimaatRegelaar;
+    //KlimaatRegelaar klimaatRegelaar;
     SoilHumiditySensor soilHumiditySensor;
     LuchtVochtigheidTemperatuurSensor luchtVochtigheidTemperatuurSensor;
     LichtSensor lichtSensor;
     //Lampen lampen;
     boolean ventilatorIsUit = true;
     boolean vernevelaarIsUit = true;
-    byte (&pins)[8];
+    //byte (&pins)[8];
     float (&settings)[10];
 
     // #define IDX_BAK1_PIN_SOILPIN 0
@@ -381,32 +381,32 @@ class Plantenbak {
     //byte mylampenPin1, byte mylampenPin2, byte mynevelPin, byte myventilatorPin,
     
     public:
-    Plantenbak(byte (&pinArray)[8], float (&settingsPlantenbak)[10]) :
-        pins(pinArray), 
+    Plantenbak(byte pin0, byte pin1, byte pin2,  byte pin3, byte pin4, byte pin5, byte pin6, byte pin7, float (&settingsPlantenbak)[10]) :
+        //pins(pinArray), 
         settings(settingsPlantenbak),
-        soilHumiditySensor(pins[IDX_BAK1_PIN_SOILPIN], pins[IDX_BAK1_PIN_SOILPOWER]),
-        lichtSensor(pins[IDX_BAK1_PIN_LIGHTPIN]),
-        luchtVochtigheidTemperatuurSensor(pins[IDX_BAK1_PIN_DHT]),
+        soilHumiditySensor(pin0, pin1),
+        lichtSensor(pin2),
+        luchtVochtigheidTemperatuurSensor(pin6)
         // lampen(pins[IDX_BAK1_PIN_LAMPEN], settings[IDX_LAPENAAN], settings[IDX_LAMPENUIT])//,
-        klimaatRegelaar(pins[IDX_BAK1_PIN_LAMPEN1], pins[IDX_BAK1_PIN_LAMPEN2], pins[IDX_BAK1_PIN_VERNEVELAAR], pins[ IDX_BAK1_PIN_VENTILATOR], settings)
+        //klimaatRegelaar(pins[IDX_BAK1_PIN_LAMPEN1], pins[IDX_BAK1_PIN_LAMPEN2], pins[IDX_BAK1_PIN_VERNEVELAAR], pins[ IDX_BAK1_PIN_VENTILATOR], settings)
     {}
     
     void setup() {
-        Serial.println(pins[0]);
-        Serial.println(pins[1]);
-        Serial.println(pins[2]);
-        Serial.println(pins[3]);
-        Serial.println(pins[4]);
-        Serial.println(pins[5]);
-        Serial.println(pins[6]);
+        // Serial.println(pins[0]);
+        // Serial.println(pins[1]);
+        // Serial.println(pins[2]);
+        // Serial.println(pins[3]);
+        // Serial.println(pins[4]);
+        // Serial.println(pins[5]);
+        // Serial.println(pins[6]);
         
         lichtSensor.initialisatie();
         soilHumiditySensor.initialisatie();
         luchtVochtigheidTemperatuurSensor.initialisatie();
 
-        pinMode(pins[IDX_BAK1_PIN_VERNEVELAAR], OUTPUT);
-        digitalWrite(pins[IDX_BAK1_PIN_VERNEVELAAR], LOW);
-        digitalWrite(pins[IDX_BAK1_PIN_VENTILATOR], LOW);
+        // pinMode(pins[IDX_BAK1_PIN_VERNEVELAAR], OUTPUT);
+        // digitalWrite(pins[IDX_BAK1_PIN_VERNEVELAAR], LOW);
+        // digitalWrite(pins[IDX_BAK1_PIN_VENTILATOR], LOW);
         Serial.println("plantenbak geinitieerd");
     }
 
@@ -556,7 +556,7 @@ class Plantenbak {
 };
 
 Klok klok;
-Plantenbak plantenbak1(pinArray, settingsPlantenbak);
+Plantenbak plantenbak1(pinArray[0], pinArray[1], pinArray[2], pinArray[3], pinArray[4], pinArray[5], pinArray[6], pinArray[7], settingsPlantenbak);
 
 void setup()
 {
