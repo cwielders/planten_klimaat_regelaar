@@ -15,28 +15,23 @@
 #define IDX_NACHTTEMP 5
 #define IDX_DAGVOCHT 6
 #define IDX_NACHTVOCHT 7
+#define IDX_BEWOLKINGAAN 8
+#define IDX_BEWOLKINGUIT 9
 
 #define IDX_BAK1_PIN_SOILPIN 0
 #define IDX_BAK1_PIN_SOILPOWER 1
 #define IDX_BAK1_PIN_LIGHTPIN 2
-#define IDX_BAK1_PIN_LAMPEN 3
+#define IDX_BAK1_PIN_LAMPEN1 3
 #define IDX_BAK1_PIN_VENTILATOR 4
 #define IDX_BAK1_PIN_VERNEVELAAR 5
 #define IDX_BAK1_PIN_DHT 6
+#define IDX_BAK1_PIN_LAMPEN2 7
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
 
-float settingsPlantenbak[8] = {8, 21, 1, 8, 28, 18, 60, 90};// lampenaan, lampenuit, dauwaan, dauwuit, dag temperatuur, nacht temperatuur, dag vochtigheid, nacht vochtigheid)
-byte pinArray[7] = {A0, 3, A1, 10, 11, 12, 2}; //1soilsensorPin1, 2soilPower1, 3lightsensorPin1, 4lampenPin1, 5ventilatorpin1, 6vernevelaarpin1, 7dhtpin1
-//Variables pot humidity
-// int soilsensorPin1 = A0;//Declare a variable for the soil moisture sensor 
-// int soilPower1 = 3;//Variable for Soil moisture Power
-// //Variables light sensor
-// int lightsensorPin1 = A1; // select the input pin for the potentiometer
-// //Variables lampenpowerPinpowerPinpowerPinpowerPinpowerPin
-// byte lampenPin1 = 10;
-
+float settingsPlantenbak[10] = {8, 21, 1, 8, 28, 18, 60, 90, 12, 14};// lampenaan, lampenuit, dauwaan, dauwuit, dag temperatuur, nacht temperatuur, dag vochtigheid, nacht vochtigheid, bewolkingaan, bewolkinguit)
+byte pinArray[8] = {A0, 3, A1, 4, 5, 6, 2, 7}; //1soilsensorPin1, 2soilPower1, 3lightsensorPin1, 4lampenPin1, 5ventilatorpin1, 6vernevelaarpin1, 7dhtpin1
 
 
 class LichtSensor {
@@ -49,9 +44,14 @@ class LichtSensor {
     LichtSensor(int myPin) {
         pin = myPin;
         analogReference(EXTERNAL); 
-        Serial.print("lichtsensor geinitialiseerd");
     }
 
+    void initialisatie() {
+            Serial.println("lichtsensor geinitialiseerd");
+            Serial.print("lichtsensorpin = ");
+            Serial.println(pin);
+    }
+    
     // read the raw value from the light sensor:
     float readRawValue() {
         float rawValue = analogRead(pin);
@@ -81,7 +81,15 @@ class SoilHumiditySensor {
         digitalWrite(powerPin, LOW);//Set to LOW so no power is flowing through the sensor
     }
 
+    void initialisatie() {
+            Serial.println("SoilHumiditySensor geinitialiseerd");
+            Serial.print("SoilHumiditySensorPin = ");
+            Serial.println(pin);
+            Serial.print("SoilHumiditySensorPowerPin = ");
+            Serial.println(powerPin);
+    }
     // read the raw value from the soil sensor:
+    
     float readValue() {
         digitalWrite(powerPin, HIGH);//turn D2 "On"
         delay(10);//wait 10 milliseconds 
@@ -95,11 +103,19 @@ class SoilHumiditySensor {
 class LuchtVochtigheidTemperatuurSensor {
 
     DHT dht;
+    byte pin;
 
     public:
-    LuchtVochtigheidTemperatuurSensor(byte pin) :
+    LuchtVochtigheidTemperatuurSensor(byte myPin) :
     dht(pin, DHT22) {
     dht.begin();
+    pin = myPin;
+    }
+
+    void initialisatie() {
+        Serial.println("LuchtVochtigheidTemperatuurSensor geinitialiseerd");
+        Serial.print("LuchtVochtigheidTemperatuurSensorPin = ");
+        Serial.println(pin);
     }
 
     float readTempValue() {
@@ -110,6 +126,64 @@ class LuchtVochtigheidTemperatuurSensor {
         return(dht.readHumidity());    //Print temp and humidity values to serial monitor
     }
 };
+
+class KlimaatRegelaar {
+    byte lampenPin1;
+    byte lampenPin2;
+    byte nevelPin;
+    byte ventilatorPin;
+    float startDag;
+    float starNacht;
+    float startDauw;
+    float eindDauw;
+    float dagTemp;
+    float nachtTemp;
+    float dagVochtigheid;
+    float nachtVochtigheid;
+    float startBewolking;
+    float eindBewolking;
+    boolean isDag;
+    boolean isDauw;
+    boolean ventilatorIsAan;
+    boolean vernevelaarIsAan;
+    float (&settings)[10];
+
+    public:
+    KlimaatRegelaar(byte myLampenPin1, byte myLampenPin2, byte myNevelPin, byte myVentilatorPin, float (&settings)[10]) :
+       
+    settings(settingsPlantenbak)
+   
+    {
+    lampenPin1 = myLampenPin1;
+    lampenPin2 = myLampenPin2;
+    nevelPin = myNevelPin;
+    ventilatorPin = myVentilatorPin;
+    byte dagVochtigheid;
+    byte nachtVochtigheid;
+    startDag = settings[0];
+    starNacht = settings[1];
+    startDauw = settings[2];
+    eindDauw = settings[3];
+    dagTemp = settings[4];
+    nachtTemp = settings[5];
+    dagVochtigheid = settings[6];
+    nachtVochtigheid = settings[7];
+    startBewolking = settings[8];
+    eindBewolking = settings[9];
+    // lampenaan, lampenuit, dauwaan, dauwuit, dag temperatuur, nacht temperatuur, dag vochtigheid, nacht vochtigheid, bewolkingaan, bewolkinguit)
+    }
+};
+
+// #define IDX_LAPENAAN 0
+// #define IDX_LAMPENUIT 1
+// #define IDX_DAUWAAN 2
+// #define IDX_DAUWUIT 3
+// #define IDX_DAGTEMP 4
+// #define IDX_NACHTTEMP 5
+// #define IDX_DAGVOCHT 6
+// #define IDX_NACHTVOCHT 7
+// #define IDX_BEWOLKINGAAN 8
+// #define IDX_BEWOLKINGUIT 9
 
 class Lampen {
 
@@ -126,7 +200,6 @@ class Lampen {
         uurAan = aan;
         pinMode(pin, OUTPUT);
         digitalWrite(pin, LOW);
-        Serial.print("Lampen geinitieerd");
     }
 
     void regelLicht(RtcDateTime now) {
@@ -287,39 +360,54 @@ class Klok {
 
 class Plantenbak {
 
+    KlimaatRegelaar klimaatRegelaar;
     SoilHumiditySensor soilHumiditySensor;
     LuchtVochtigheidTemperatuurSensor luchtVochtigheidTemperatuurSensor;
     LichtSensor lichtSensor;
-    Lampen lampen;
+    //Lampen lampen;
     boolean ventilatorIsUit = true;
     boolean vernevelaarIsUit = true;
-    byte (&pins)[7];
-    float (&settings)[8];
+    byte (&pins)[8];
+    float (&settings)[10];
 
-    // lampenaan, lampenuit, dauwaan, dauwuit, dag temperatuur, nacht temperatuur, dag vochtigheid, nacht vochtigheid)
-    // 1soilsensorPin1, 2soilPower1, 3lightsensorPin1, 4lampenPin1, 5ventilatorpin1, 6vernevelaarpin1, 7dhtpin1 
+    // #define IDX_BAK1_PIN_SOILPIN 0
+    // #define IDX_BAK1_PIN_SOILPOWER 1
+    // #define IDX_BAK1_PIN_LIGHTPIN 2
+    // #define IDX_BAK1_PIN_LAMPEN1 3
+    // #define IDX_BAK1_PIN_VENTILATOR 4
+    // #define IDX_BAK1_PIN_VERNEVELAAR 5
+    // #define IDX_BAK1_PIN_DHT 6
+    // #define IDX_BAK1_PIN_LAMPEN2 7
+    //byte mylampenPin1, byte mylampenPin2, byte mynevelPin, byte myventilatorPin,
+    
     public:
-    Plantenbak(byte (&pinArray)[7], float (&settingsPlantenbak)[8]) :
-        pins(pinArray), settings(settingsPlantenbak),
+    Plantenbak(byte (&pinArray)[8], float (&settingsPlantenbak)[10]) :
+        pins(pinArray), 
+        settings(settingsPlantenbak),
         soilHumiditySensor(pins[IDX_BAK1_PIN_SOILPIN], pins[IDX_BAK1_PIN_SOILPOWER]),
         lichtSensor(pins[IDX_BAK1_PIN_LIGHTPIN]),
         luchtVochtigheidTemperatuurSensor(pins[IDX_BAK1_PIN_DHT]),
-        lampen(pins[IDX_BAK1_PIN_LAMPEN], settings[IDX_LAPENAAN], settings[IDX_LAMPENUIT])
-    {
-
-        
-        // soilHumiditySensor(pins[IDX_BAK1_PIN_SOILPIN], pins[IDX_BAK1_PIN_SOILPOWER]);
-        // lichtSensor(pins[IDX_BAK1_PIN_LIGHTPIN]);
-        // luchtVochtigheidTemperatuurSensor(pins[IDX_BAK1_PIN_DHT]);
-        // lampen(pins[IDX_BAK1_PIN_LAMPEN], settings[IDX_LAPENAAN], settings[IDX_LAMPENUIT]);
-    }
+        // lampen(pins[IDX_BAK1_PIN_LAMPEN], settings[IDX_LAPENAAN], settings[IDX_LAMPENUIT])//,
+        klimaatRegelaar(pins[IDX_BAK1_PIN_LAMPEN1], pins[IDX_BAK1_PIN_LAMPEN2], pins[IDX_BAK1_PIN_VERNEVELAAR], pins[ IDX_BAK1_PIN_VENTILATOR], settings)
+    {}
     
     void setup() {
+        Serial.println(pins[0]);
+        Serial.println(pins[1]);
+        Serial.println(pins[2]);
+        Serial.println(pins[3]);
+        Serial.println(pins[4]);
+        Serial.println(pins[5]);
+        Serial.println(pins[6]);
+        
+        lichtSensor.initialisatie();
+        soilHumiditySensor.initialisatie();
+        luchtVochtigheidTemperatuurSensor.initialisatie();
+
         pinMode(pins[IDX_BAK1_PIN_VERNEVELAAR], OUTPUT);
         digitalWrite(pins[IDX_BAK1_PIN_VERNEVELAAR], LOW);
-
         digitalWrite(pins[IDX_BAK1_PIN_VENTILATOR], LOW);
-        Serial.print("plantenbak geinitieerd");
+        Serial.println("plantenbak geinitieerd");
     }
 
     void loop(RtcDateTime RtcObjectHuidigeTijd) {
@@ -336,14 +424,14 @@ class Plantenbak {
         Serial.print("Soil Moisture = ");  
         Serial.println(soilHumiditySensor.readValue());
         
-        // // read the raw value from the light sensor:
-        // Serial.print("Raw = ");
-        // Serial.print(lichtSensor.readRawValue());
+        // read the raw value from the light sensor:
+        Serial.print("Raw = ");
+        Serial.print(lichtSensor.readRawValue());
         
         Serial.print(" - Lux = ");
         Serial.println(lichtSensor.readLogValue());
     
-        lampen.regelLicht(RtcObjectHuidigeTijd);
+        //lampen.regelLicht(RtcObjectHuidigeTijd);
         // dauw(RtcObjectHuidigeTijd, temperatuur, luchtVochtigheid);
         // increaseHumidity(RtcObjectHuidigeTijd, temperatuur, luchtVochtigheid);
         // decreaseTemperature(RtcObjectHuidigeTijd, temperatuur, luchtVochtigheid);
