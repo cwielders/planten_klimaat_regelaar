@@ -133,7 +133,7 @@ class KlimaatRegelaar {
     byte nevelPin;
     byte ventilatorPin;
     float startDag;
-    float starNacht;
+    float startNacht;
     float startDauw;
     float eindDauw;
     float dagTemp;
@@ -142,16 +142,16 @@ class KlimaatRegelaar {
     float nachtVochtigheid;
     float startBewolking;
     float eindBewolking;
-    boolean isDag;
+    boolean isNacht;
     boolean isDauw;
     boolean ventilatorIsAan;
     boolean vernevelaarIsAan;
-    float (&settings)[10];
+    //float (&settings)[10];
 
     public:
-    KlimaatRegelaar(byte myLampenPin1, byte myLampenPin2, byte myNevelPin, byte myVentilatorPin, float (&settings)[10]) :
+    KlimaatRegelaar(byte myLampenPin1, byte myLampenPin2, byte myNevelPin, byte myVentilatorPin, float settings[]) 
        
-    settings(settingsPlantenbak)
+    //settings(settingsPlantenbak)
    
     {
     lampenPin1 = myLampenPin1;
@@ -161,7 +161,7 @@ class KlimaatRegelaar {
     byte dagVochtigheid;
     byte nachtVochtigheid;
     startDag = settings[0];
-    starNacht = settings[1];
+    startNacht = settings[1];
     startDauw = settings[2];
     eindDauw = settings[3];
     dagTemp = settings[4];
@@ -170,6 +170,10 @@ class KlimaatRegelaar {
     nachtVochtigheid = settings[7];
     startBewolking = settings[8];
     eindBewolking = settings[9];
+    pinMode(nevelPin, OUTPUT);
+    pinMode(ventilatorPin, OUTPUT);
+    digitalWrite(nevelPin, LOW);
+    digitalWrite(ventilatorPin, LOW);
     // lampenaan, lampenuit, dauwaan, dauwuit, dag temperatuur, nacht temperatuur, dag vochtigheid, nacht vochtigheid, bewolkingaan, bewolkinguit)
     }
 
@@ -185,26 +189,60 @@ void initialisatie() {
     Serial.println(ventilatorPin);
     Serial.println();
     Serial.print("startDag = ");
-    Serial.println(settings[0]);
-    Serial.print("starNacht = ");
-    Serial.println(settings[1]);
+    Serial.println(startDag);
+    Serial.print("startNacht = ");
+    Serial.println(startNacht);
     Serial.print("startDauw = ");
-    Serial.println(settings[2]);
+    Serial.println(startDauw);
     Serial.print("eindDauw = ");
-    Serial.println(settings[3]);
+    Serial.println(eindDauw);
+    Serial.print("dagTemp = ");
+    Serial.println(dagTemp);
+    // Serial.print("NachtTemp = ");
+    // Serial.println(settings[5]);
+    // Serial.print("dagVochtigheid = ");
+    // Serial.println(settings[6]);
+    // Serial.print("nachtVochtigheid = ");
+    // Serial.println(settings[7]);
+    // Serial.print("starBewolking = ");
+    // Serial.println(settings[8]);
+    Serial.print("eindBewolking = ");
+    Serial.println(eindBewolking);
 }
+
+float huidigeTijd(RtcDateTime now) {
+
+    float uurNu = now.Second();// terugveranderen naat hour()
+    float minuutNu = now.Minute();
+    float uurMinuutNu = uurNu + (minuutNu / 60);
+    return(uurMinuutNu);
+}
+
+
+
+void regelLicht(RtcDateTime now) {
+        
+        float uurMinuutNu = huidigeTijd(now);        
+        Serial.println(uurMinuutNu);
+        Serial.println(startDag);
+        Serial.println(startNacht);
+        
+        if (isNacht && uurMinuutNu >= startDag && uurMinuutNu <= startNacht) {
+            digitalWrite(lampenPin1, HIGH);
+            digitalWrite(lampenPin2, HIGH);
+            Serial.println("Lampen aangeschakeld");
+            isNacht = false;
+        }
+        if (!isNacht && (uurMinuutNu <= startDag || uurMinuutNu >= startNacht)) {
+            digitalWrite(lampenPin1, LOW); 
+            digitalWrite(lampenPin2, LOW); 
+            Serial.println("Lampen uitgeschakeld"); 
+            isNacht = true;
+        }
+    }
 };
 
-// #define IDX_LAPENAAN 0
-// #define IDX_LAMPENUIT 1
-// #define IDX_DAUWAAN 2
-// #define IDX_DAUWUIT 3
-// #define IDX_DAGTEMP 4
-// #define IDX_NACHTTEMP 5
-// #define IDX_DAGVOCHT 6
-// #define IDX_NACHTVOCHT 7
-// #define IDX_BEWOLKINGAAN 8
-// #define IDX_BEWOLKINGUIT 9
+
 
 class Lampen {
 
@@ -389,48 +427,26 @@ class Plantenbak {
     boolean ventilatorIsUit = true;
     boolean vernevelaarIsUit = true;
     //byte (&pins)[8];
-    float (&settings)[10];
+    //float (&settings)[10];
 
-    // #define IDX_BAK1_PIN_SOILPIN 0
-    // #define IDX_BAK1_PIN_SOILPOWER 1
-    // #define IDX_BAK1_PIN_LIGHTPIN 2
-    // #define IDX_BAK1_PIN_LAMPEN1 3
-    // #define IDX_BAK1_PIN_VENTILATOR 4
-    // #define IDX_BAK1_PIN_VERNEVELAAR 5
-    // #define IDX_BAK1_PIN_DHT 6
-    // #define IDX_BAK1_PIN_LAMPEN2 7
-    //byte mylampenPin1, byte mylampenPin2, byte mynevelPin, byte myventilatorPin,
-    
     public:
-     Plantenbak(byte pin0, byte pin1, byte pin2,  byte pin3, byte pin4, byte pin5, byte pin6, byte pin7, float (&settingsPlantenbak)[10]) :
+     Plantenbak(byte pin0, byte pin1, byte pin2,  byte pin3, byte pin4, byte pin5, byte pin6, byte pin7, float mySettingsPlantenbak[]) :
         //pins(pinArray), 
-        settings(settingsPlantenbak),
+        //settings(mysettingsPlantenbak),
         soilHumiditySensor(pin0, pin1),
         lichtSensor(pin2),
-
         luchtVochtigheidTemperatuurSensor(pin6),
-      
-        klimaatRegelaar(pin3 , pin7, pin5, pin4, settings)
+        klimaatRegelaar(pin3 , pin7, pin5, pin4, mySettingsPlantenbak)
     {}
     //1soilsensorPin1, 2soilPower1, 3lightsensorPin1, 4lampenPin1, 5ventilatorpin1, 6vernevelaarpin1, 7dhtpin1
 
     void setup() {
-        // Serial.println(pins[0]);
-        // Serial.println(pins[1]);
-        // Serial.println(pins[2]);
-        // Serial.println(pins[3]);
-        // Serial.println(pins[4]);
-        // Serial.println(pins[5]);
-        // Serial.println(pins[6]);
-        
+               
         lichtSensor.initialisatie();
         soilHumiditySensor.initialisatie();
         luchtVochtigheidTemperatuurSensor.initialisatie();
         klimaatRegelaar.initialisatie();
 
-        // pinMode(pins[IDX_BAK1_PIN_VERNEVELAAR], OUTPUT);
-        // digitalWrite(pins[IDX_BAK1_PIN_VERNEVELAAR], LOW);
-        // digitalWrite(pins[IDX_BAK1_PIN_VENTILATOR], LOW);
         Serial.println("plantenbak geinitieerd");
     }
 
@@ -455,7 +471,7 @@ class Plantenbak {
         Serial.print(" - Lux = ");
         Serial.println(lichtSensor.readLogValue());
     
-        //lampen.regelLicht(RtcObjectHuidigeTijd);
+        klimaatRegelaar.regelLicht(RtcObjectHuidigeTijd);
         // dauw(RtcObjectHuidigeTijd, temperatuur, luchtVochtigheid);
         // increaseHumidity(RtcObjectHuidigeTijd, temperatuur, luchtVochtigheid);
         // decreaseTemperature(RtcObjectHuidigeTijd, temperatuur, luchtVochtigheid);
