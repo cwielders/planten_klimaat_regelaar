@@ -5,18 +5,19 @@
 #include <DHT.h>
 #include <DHT_U.h>
 
-#define DHTPIN1 2
+#include <UTFT.h>
+// Declare which fonts we will be using
+extern uint8_t SmallFont[];
+UTFT myGLCD(CTE32_R2,38,39,40,41);
 
-// #define IDX_LAPENAAN 0
-// #define IDX_LAMPENUIT 1
-// #define IDX_DAUWAAN 2
-// #define IDX_DAUWUIT 3
-// #define IDX_DAGTEMP 4
-// #define IDX_NACHTTEMP 5
-// #define IDX_DAGVOCHT 6
-// #define IDX_NACHTVOCHT 7
-// #define IDX_BEWOLKINGAAN 8
-// #define IDX_BEWOLKINGUIT 9
+#define STARTDAG 0
+#define EINDDAG 1
+#define DUURDAUW 2
+#define DAGTEMPERATUUR 3
+#define NACHTTEMPERATUUR 4
+#define LUCHTVOCHTIGHEID 5
+#define DUURREGEN 6
+
 
 // #define IDX_BAK1_PIN_SOILPIN 0
 // #define IDX_BAK1_PIN_SOILPOWER 1
@@ -30,7 +31,13 @@
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
 
-float settingsPlantenbak[10] = {8, 40, 1, 8, 28, 14, 60, 90, 12, 24};// lampenaan, lampenuit, dauwaan, dauwuit, dag temperatuur, nacht temperatuur, dag vochtigheid, nacht vochtigheid, bewolkingaan, bewolkinguit)
+float settingsPlantenbak[10] = {8, 40, 1, 8, 28, 14, 60, 90, 12, 24};
+// lampenaan, lampenuit, dauwaan, dauwuit, dag temperatuur, nacht temperatuur, dag vochtigheid, nacht vochtigheid, bewolkingaan, bewolkinguit)
+float settingsPlantenbakZomer[7] = {8, 40, 1, 35, 20, 55, 0};
+float settingsPlantenbakRegen[9] = {8, 40, 2, 30, 23, 85, 0};
+float settingsPlantenbakWinter[9] = {8, 40, 3, 28, 14,70, 4};
+int seizoenen[12] = {0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2};
+// lampenaan, lampenuit, duurdauw, dag temperatuur, nacht temperatuur, vochtigheid, bewolkingaan, bewolkinguit
 byte pinArray1[8] = {A0, 3, A1, 4, 5, 6, 2, 7}; //1soilsensorPin1, 2soilPower1, 3lightsensorPin1, 4lampenPin1, 5ventilatorpin1, 6vernevelaarpin1, 7dhtpin, lampenpin21
 // byte pinArray2[8] = {8, 9, 10, 11, 12, 13, 14, 15};
 // byte pinArray2[8] = {8, 9, 10, 11, 12, 13, 14, 15};
@@ -152,6 +159,14 @@ class KlimaatRegelaar {
     boolean vernevelaarIsAan = false;
     boolean lampIsAan2 = false;
     boolean luchtIsDroog = false;
+    
+    float seizoenSettings[7];
+  
+    enum Seizoen {
+            WINTER = 0,
+            ZOMER = 1,
+            REGEN = 2
+        } seizoen;
 
     public:
     KlimaatRegelaar(byte myLampenPin1, byte myLampenPin2, byte myNevelPin, byte myVentilatorPin, float settings[]) 
@@ -218,26 +233,54 @@ class KlimaatRegelaar {
 
     float huidigeTijd(RtcDateTime now) {
 
-        float uurNu = now.Second();// terugveranderen naat hour()
-        float minuutNu = now.Minute();
+        int uurNu = now.Second();// terugveranderen naat hour()
+        int minuutNu = now.Minute();
+        int maandNu = now.Month();
         float uurMinuutNu = uurNu + (minuutNu / 60);
         return(uurMinuutNu);
     }
 
-    void regelLicht(RtcDateTime now) {
+    float * getSeizoenSettings(RtcDateTime now) {
+
+        int seizoenNu = seizoenen[now.Month()]; 
+        Serial.println(seizoenNu);
+        
+        switch (seizoenNu) {
+            case WINTER:
+                for (int i = 0; i < 7; i++) {
+                    seizoenSettings[i] = settingsPlantenbakWinter[i];
+                }
+                return(seizoenSettings);
+                break;
+            case ZOMER:
+                for (int i = 0; i < 7; i++) {
+                    seizoenSettings[i] = settingsPlantenbakZomer[i];
+                }
+                return(seizoenSettings);
+                break;
+            case REGEN:
+                for (int i = 0; i < 7; i++) {
+                    seizoenSettings[i] = settingsPlantenbakRegen[i];
+                }
+                return(seizoenSettings);
+                break;
+        }
+    }
+
+    void regelLicht(RtcDateTime now, float settings[]) {
             
         float uurMinuutNu = huidigeTijd(now);        
+        Serial.print("huidige tijd = ");
         Serial.println(uurMinuutNu);
                 
-        if (!isDag && uurMinuutNu >= startDag && uurMinuutNu <= startNacht) {
+        if (!isDag && uurMinuutNu >= settings[STARTDAG] && uurMinuutNu <= settings[EINDDAG]) {
             digitalWrite(lampenPin1, HIGH);
             digitalWrite(lampenPin2, HIGH);
             Serial.println("Lampen aangeschakeld");
             isDag = true;
-            //lampIsAan1 = true;
             lampIsAan2 = true;
         }
-        if (isDag&& (uurMinuutNu <= startDag || uurMinuutNu >= startNacht)) {
+        if (isDag&& (uurMinuutNu <= settings[STARTDAG] || uurMinuutNu >= settings[EINDDAG])) {
             digitalWrite(lampenPin1, LOW); 
             digitalWrite(lampenPin2, LOW); 
             Serial.println("Lampen uitgeschakeld"); 
@@ -246,10 +289,16 @@ class KlimaatRegelaar {
         }
     }
 
-    void regelRegenWolken(RtcDateTime now, float temperatuur, float luchtVochtigheid) {
-                
+    void regelRegenWolken(RtcDateTime now, float temperatuur, float luchtVochtigheid, float settings[]) {
+
+        float startBewolking = ((settings[STARTDAG] + settings[EINDDAG]) / 2) - (settings[DUURREGEN] / 2);
+        float eindBewolking = startBewolking + settings[DUURREGEN];
         float uurMinuutNu = huidigeTijd(now); 
-        if (!isRegenWolk && uurMinuutNu >= startBewolking && uurMinuutNu <= eindBewolking && temperatuur > nachtTemp) {
+        Serial.println("regelRegenWolken");
+        Serial.println(startBewolking);
+        Serial.println(eindBewolking);
+        
+        if (!isRegenWolk && uurMinuutNu >= startBewolking && uurMinuutNu <= eindBewolking && temperatuur > settings[NACHTTEMPERATUUR] && luchtVochtigheid < 100) {
             isRegenWolk = true;
             if (!vernevelaarIsAan) {
                 digitalWrite(nevelPin, HIGH);
@@ -263,17 +312,15 @@ class KlimaatRegelaar {
             }
         }
 
-        if (isRegenWolk && (uurMinuutNu <= startBewolking || uurMinuutNu >= eindBewolking ||temperatuur < nachtTemp || luchtVochtigheid == 100)) {
+        if (isRegenWolk && (uurMinuutNu < startBewolking || uurMinuutNu > eindBewolking ||temperatuur < settings[NACHTTEMPERATUUR])) {
             isRegenWolk = false;
-            if (vernevelaarIsAan) {
+            if (vernevelaarIsAan && luchtVochtigheid > settings[LUCHTVOCHTIGHEID]) {
                 digitalWrite(nevelPin, LOW); 
                 Serial.println("vernevelaar uit (regenwolken)"); 
                 vernevelaarIsAan = false;
             }  
-        }  
-        if (isRegenWolk && (uurMinuutNu <= startBewolking || uurMinuutNu >= eindBewolking)) { 
             if (!lampIsAan2 && isDag) {
-                 isRegenWolk = false;
+                isRegenWolk = false;
                 digitalWrite(lampenPin2, HIGH); 
                 Serial.println("lampen2 aan (regenwolken)"); 
                 lampIsAan2 = true;
@@ -281,10 +328,16 @@ class KlimaatRegelaar {
         }
     }
     
-    void regelDauw(RtcDateTime now, float temperatuur, float luchtVochtigheid) {
+    void regelDauw(RtcDateTime now, float temperatuur, float luchtVochtigheid, float settings[]) {
         
+        float startDauw = settings[STARTDAG] - settings[DUURDAUW];
+        float eindDauw = startDauw + settings[DUURDAUW];
         float uurMinuutNu = huidigeTijd(now); 
-        if (!isDauw && uurMinuutNu >= startDauw && uurMinuutNu <= eindDauw && temperatuur > nachtTemp) {
+        Serial.println("regelDauw");
+        Serial.println(startDauw);
+        Serial.println(eindDauw);
+
+        if (!isDauw && uurMinuutNu >= startDauw && uurMinuutNu <= eindDauw && temperatuur > settings[NACHTTEMPERATUUR]) {
             if (!vernevelaarIsAan) {
                 digitalWrite(nevelPin, HIGH);
                 Serial.println("vernevelaar aan (dauw)");
@@ -298,8 +351,8 @@ class KlimaatRegelaar {
             isDauw = true;
         }
 
-        if (isDauw && (uurMinuutNu <= startDauw || uurMinuutNu >= eindDauw || temperatuur < nachtTemp || luchtVochtigheid == 100)) {
-            if (vernevelaarIsAan && luchtVochtigheid > dagVochtigheid) {
+        if (isDauw && (uurMinuutNu < startDauw || uurMinuutNu > eindDauw || temperatuur < settings[NACHTTEMPERATUUR])) {
+            if (vernevelaarIsAan && luchtVochtigheid > settings[LUCHTVOCHTIGHEID]) {
                 digitalWrite(nevelPin, LOW); 
                 Serial.println("vernevelaar uit (dauw)"); 
                 vernevelaarIsAan = false;
@@ -313,27 +366,32 @@ class KlimaatRegelaar {
         }
     }
 
-    void regelVochtigheid(float temperatuur, float luchtVochtigheid) {
+    void regelVochtigheid(float temperatuur, float luchtVochtigheid, float settings[]) {
 
-        if (luchtVochtigheid < dagVochtigheid && temperatuur > nachtTemp) {
+        if (luchtVochtigheid < settings[LUCHTVOCHTIGHEID] && temperatuur > settings[NACHTTEMPERATUUR]) {
             luchtIsDroog = true;
             if (!vernevelaarIsAan) {
                 digitalWrite(nevelPin, HIGH);
-                Serial.print("vernevelaar aan (luchtvochtigheid)");
+                Serial.println("vernevelaar aan (luchtvochtigheid)");
                 vernevelaarIsAan = true;
             } 
         }
-        if (vernevelaarIsAan && !isDauw && !isRegenWolk && (luchtVochtigheid > dagVochtigheid || temperatuur < nachtTemp)) {
+        if (vernevelaarIsAan && !isDauw && !isRegenWolk && (luchtVochtigheid > settings[LUCHTVOCHTIGHEID] || temperatuur < settings[NACHTTEMPERATUUR])) {
             digitalWrite(nevelPin, LOW);
             Serial.print("vernevelaar uit (luchtvochtigheid)");
             vernevelaarIsAan = false;
         }
-        if (luchtVochtigheid > dagVochtigheid ) { 
+        if (luchtVochtigheid > settings[LUCHTVOCHTIGHEID] ) { 
             luchtIsDroog = false;
+        }
+        if (vernevelaarIsAan && luchtVochtigheid > 100) {
+            digitalWrite(nevelPin, LOW);
+            Serial.print("vernevelaar uit (luchtvochtigheid)");
+            vernevelaarIsAan = false;
         }
     }
 
-    void regelTemperatuur(float temperatuur, float luchtVochtigheid){
+    void regelTemperatuur(float temperatuur, float settings[]){
 
         if (temperatuur > dagTemp) {
             if (!ventilatorIsAan) {
@@ -352,13 +410,13 @@ class KlimaatRegelaar {
                 vernevelaarIsAan = false;
             }
         }
-        if (temperatuur < dagTemp) {
+        if (temperatuur < settings[DAGTEMPERATUUR]) {
             if (ventilatorIsAan && !isDauw) {
                 digitalWrite(ventilatorPin, LOW);
                 Serial.print("vernevelaar uit (temperatuur)");
                 ventilatorIsAan = false;
             }
-            if (!lampIsAan2 && !isRegenWolk) {
+            if (!lampIsAan2 && !isRegenWolk && isDag) {
                 digitalWrite(lampenPin2, HIGH);
                 Serial.println("lampen2 aan (temperatuur)");
                 lampIsAan2 = true;
@@ -384,6 +442,9 @@ class KlimaatRegelaar {
         Serial.println(isRegenWolk);
         Serial.print("lampenAan2 = ");
         Serial.println(lampIsAan2);
+        Serial.print("luchtIsDroog = ");
+        Serial.println(luchtIsDroog);
+        
     }
 };
 
@@ -397,17 +458,24 @@ class Klok {
         Serial.print("Klok geinitieerd");
     }
 
-    void setup() {
+    void setup () {
+        
         Serial.print("compiled: ");
-        Serial.print(__DATE__);
+        Serial.println(__DATE__);
         Serial.println(__TIME__);
 
+        //--------RTC SETUP ------------
+        // if you are using ESP-01 then uncomment the line below to reset the pins to
+        // the available pins for SDA, SCL
+        // Wire.begin(0, 2); // due to limited pins, use pin 0 and 2 for SDA, SCL
+        
         Rtc.Begin();
 
         RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
+        Serial.print("Dit is de gecompileerde tijd: ");
         printDateTime(compiled);
         Serial.println();
-        
+
         if (!Rtc.IsDateTimeValid()) 
         {
             if (Rtc.LastError() != 0)
@@ -415,8 +483,8 @@ class Klok {
                 // we have a communications error
                 // see https://www.arduino.cc/en/Reference/WireEndTransmission for 
                 // what the number means
-                 Serial.print("RTC communications error = ");
-                 Serial.println(Rtc.LastError());
+                Serial.print("RTC communications error = ");
+                Serial.println(Rtc.LastError());
             }
             else
             {
@@ -424,7 +492,7 @@ class Klok {
                 //    1) first time you ran and the device wasn't running yet
                 //    2) the battery on the device is low or even missing
 
-                 Serial.println("RTC lost confidence in the DateTime!");
+                Serial.println("RTC lost confidence in the DateTime!");
 
                 // following line sets the RTC to the date & time this sketch was compiled
                 // it will also reset the valid flag internally unless the Rtc device is
@@ -436,28 +504,23 @@ class Klok {
 
         if (!Rtc.GetIsRunning())
         {
-             Serial.println("RTC was not actively running, starting now");
+            Serial.println("RTC was not actively running, starting now");
             Rtc.SetIsRunning(true);
         }
 
         RtcDateTime now = Rtc.GetDateTime();
         if (now < compiled) 
         {
-             printDateTime(compiled);
-             printDateTime(now);
-             Serial.println("RTC is older than compile time!  (Updating DateTime)");
-
+            Serial.println("RTC is older than compile time!  (Updating DateTime)");
             Rtc.SetDateTime(compiled);
-             printDateTime(compiled);
-
         }
         else if (now > compiled) 
         {
-             Serial.println("RTC is newer than compile time. (this is expected)");
+            Serial.println("RTC is newer than compile time. (this is expected)");
         }
         else if (now == compiled) 
         {
-             Serial.println("RTC is the same as compile time! (not expected but all is fine)");
+            Serial.println("RTC is the same as compile time! (not expected but all is fine)");
         }
 
         // never assume the Rtc was last configured by you, so
@@ -465,13 +528,6 @@ class Klok {
         Rtc.Enable32kHzPin(false);
         Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone); 
     }
-    
-    // int[] getUurMinuutNu(RtcDateTime now) {
-    //     int uurNu = now.hour();
-    //     int minuutNu = now.Minute();
-    //     int huidigeTijdUurMinuut[2] = {uurNu, minuutNu};
-    //     return(huidigeTijdUurMinuut);
-    //}
 
     RtcDateTime getTime(){
         if (!Rtc.IsDateTimeValid()) 
@@ -493,6 +549,7 @@ class Klok {
         }
 
         RtcDateTime now = Rtc.GetDateTime();
+        Serial.print("Dit is de loop tijd ");
         printDateTime(now);
         Serial.println();
 
@@ -512,7 +569,8 @@ class Klok {
         dt.Hour(),
         dt.Minute(),
         dt.Second() );
-        Serial.print(datestring);
+        Serial.println(datestring);
+       
     }
 };
 
@@ -564,12 +622,23 @@ class Plantenbak {
         
         Serial.print(" - Lux = ");
         Serial.println(lichtSensor.readLogValue());
-    
-        klimaatRegelaar.regelLicht(RtcObjectHuidigeTijd);
-        klimaatRegelaar.regelDauw(RtcObjectHuidigeTijd, temperatuur, luchtVochtigheid);
-        klimaatRegelaar.regelRegenWolken(RtcObjectHuidigeTijd, temperatuur, luchtVochtigheid);
-        klimaatRegelaar.regelVochtigheid(temperatuur, luchtVochtigheid);
-        klimaatRegelaar.regelTemperatuur(temperatuur, luchtVochtigheid);
+        
+        float * settings = klimaatRegelaar.getSeizoenSettings(RtcObjectHuidigeTijd);
+        
+        Serial.println("doorgegeven settings");
+        Serial.println(settings[0]);
+        Serial.println(settings[1]);
+        Serial.println(settings[2]);
+        Serial.println(settings[3]);
+        Serial.println(settings[4]);
+        Serial.println(settings[5]);
+        Serial.println(settings[6]);
+        Serial.println("einde settings");
+        klimaatRegelaar.regelLicht(RtcObjectHuidigeTijd, settings);
+        klimaatRegelaar.regelDauw(RtcObjectHuidigeTijd, temperatuur, luchtVochtigheid, settings);
+        klimaatRegelaar.regelRegenWolken(RtcObjectHuidigeTijd, temperatuur, luchtVochtigheid, settings);
+        klimaatRegelaar.regelVochtigheid(temperatuur, luchtVochtigheid, settings);
+        klimaatRegelaar.regelTemperatuur(temperatuur, settings);
         klimaatRegelaar.standen();
     }    
 };
@@ -588,7 +657,8 @@ void setup()
 void loop()
 {
     RtcDateTime tijd = klok.getTime();
-    Serial.println(tijd);
     plantenbak1.loop(tijd);
     delay(3000);
+    Serial.println("einde loop");
+    Serial.println();
 }
