@@ -18,25 +18,14 @@ UTFT myGLCD(CTE32_R2,38,39,40,41);
 #define LUCHTVOCHTIGHEID 5
 #define DUURREGEN 6
 
-
-// #define IDX_BAK1_PIN_SOILPIN 0
-// #define IDX_BAK1_PIN_SOILPOWER 1
-// #define IDX_BAK1_PIN_LIGHTPIN 2
-// #define IDX_BAK1_PIN_LAMPEN1 3
-// #define IDX_BAK1_PIN_VENTILATOR 4
-// #define IDX_BAK1_PIN_VERNEVELAAR 5
-// #define IDX_BAK1_PIN_DHT 6
-// #define IDX_BAK1_PIN_LAMPEN2 7
-
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
+// float settingsPlantenbakZomer[7] = {8, 40, 1, 35, 20, 55, 0};
+// float settingsPlantenbakRegen[9] = {8, 40, 2, 30, 23, 85, 0};
+// float settingsPlantenbakWinter[9] = {8, 40, 3, 28, 14,70, 4};
+// int seizoenen[12] = {0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2};
 
-float settingsPlantenbak[10] = {8, 40, 1, 8, 28, 14, 60, 90, 12, 24};
-// lampenaan, lampenuit, dauwaan, dauwuit, dag temperatuur, nacht temperatuur, dag vochtigheid, nacht vochtigheid, bewolkingaan, bewolkinguit)
-float settingsPlantenbakZomer[7] = {8, 40, 1, 35, 20, 55, 0};
-float settingsPlantenbakRegen[9] = {8, 40, 2, 30, 23, 85, 0};
-float settingsPlantenbakWinter[9] = {8, 40, 3, 28, 14,70, 4};
-int seizoenen[12] = {0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2};
+float plantenBakSettings1[4][12] = {{8, 40, 3, 28, 14,70, 4}, {8, 40, 1, 35, 20, 55, 0}, {8, 40, 2, 30, 23, 85, 0}, {0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2} };
 // lampenaan, lampenuit, duurdauw, dag temperatuur, nacht temperatuur, vochtigheid, bewolkingaan, bewolkinguit
 byte pinArray1[8] = {A0, 3, A1, 4, 5, 6, 2, 7}; //1soilsensorPin1, 2soilPower1, 3lightsensorPin1, 4lampenPin1, 5ventilatorpin1, 6vernevelaarpin1, 7dhtpin, lampenpin21
 // byte pinArray2[8] = {8, 9, 10, 11, 12, 13, 14, 15};
@@ -142,16 +131,6 @@ class KlimaatRegelaar {
     byte lampenPin2;
     byte nevelPin;
     byte ventilatorPin;
-    float startDag;
-    float startNacht;
-    float startDauw;
-    float eindDauw;
-    float dagTemp;
-    float nachtTemp;
-    float dagVochtigheid;
-    float nachtVochtigheid;
-    float startBewolking;
-    float eindBewolking;
     boolean isDag = false;
     boolean isDauw = false;
     boolean isRegenWolk = false;
@@ -160,32 +139,10 @@ class KlimaatRegelaar {
     boolean lampIsAan2 = false;
     boolean luchtIsDroog = false;
     
-    float seizoenSettings[7];
-  
-    enum Seizoen {
-            WINTER = 0,
-            ZOMER = 1,
-            REGEN = 2
-        } seizoen;
-
     public:
-    KlimaatRegelaar(byte myLampenPin1, byte myLampenPin2, byte myNevelPin, byte myVentilatorPin, float settings[]) 
+    KlimaatRegelaar(byte myLampenPin1, byte myLampenPin2, byte myNevelPin, byte myVentilatorPin) 
    
         {
-        lampenPin1 = myLampenPin1;
-        lampenPin2 = myLampenPin2;
-        nevelPin = myNevelPin;
-        ventilatorPin = myVentilatorPin; 
-        startDag = settings[0];
-        startNacht = settings[1];
-        startDauw = settings[2];
-        eindDauw = settings[3];
-        dagTemp = settings[4];
-        nachtTemp = settings[5];
-        dagVochtigheid = settings[6];
-        nachtVochtigheid = settings[7];
-        startBewolking = settings[8];
-        eindBewolking = settings[9];
         pinMode(lampenPin1, OUTPUT);
         digitalWrite(lampenPin1, LOW);
         pinMode(lampenPin2, OUTPUT);
@@ -209,26 +166,6 @@ class KlimaatRegelaar {
         Serial.print("ventilatorPin = ");
         Serial.println(ventilatorPin);
         Serial.println();
-        Serial.print("startDag = ");
-        Serial.println(startDag);
-        Serial.print("startNacht = ");
-        Serial.println(startNacht);
-        Serial.print("startDauw = ");
-        Serial.println(startDauw);
-        Serial.print("eindDauw = ");
-        Serial.println(eindDauw);
-        Serial.print("dagTemp = ");
-        Serial.println(dagTemp);
-        Serial.print("nachtTemp = ");
-        Serial.println(nachtTemp);
-        Serial.print("dagVochtigheid = ");
-        Serial.println(dagVochtigheid);
-        Serial.print("nachtVochtigheid = ");
-        Serial.println(nachtVochtigheid);
-        Serial.print("startBewolking = ");
-        Serial.println(startBewolking);
-        Serial.print("eindBewolking = ");
-        Serial.println(eindBewolking);
     }
 
     float huidigeTijd(RtcDateTime now) {
@@ -238,33 +175,6 @@ class KlimaatRegelaar {
         int maandNu = now.Month();
         float uurMinuutNu = uurNu + (minuutNu / 60);
         return(uurMinuutNu);
-    }
-
-    float * getSeizoenSettings(RtcDateTime now) {
-
-        int seizoenNu = seizoenen[now.Month()]; 
-        Serial.println(seizoenNu);
-        
-        switch (seizoenNu) {
-            case WINTER:
-                for (int i = 0; i < 7; i++) {
-                    seizoenSettings[i] = settingsPlantenbakWinter[i];
-                }
-                return(seizoenSettings);
-                break;
-            case ZOMER:
-                for (int i = 0; i < 7; i++) {
-                    seizoenSettings[i] = settingsPlantenbakZomer[i];
-                }
-                return(seizoenSettings);
-                break;
-            case REGEN:
-                for (int i = 0; i < 7; i++) {
-                    seizoenSettings[i] = settingsPlantenbakRegen[i];
-                }
-                return(seizoenSettings);
-                break;
-        }
     }
 
     void regelLicht(RtcDateTime now, float settings[]) {
@@ -393,7 +303,7 @@ class KlimaatRegelaar {
 
     void regelTemperatuur(float temperatuur, float settings[]){
 
-        if (temperatuur > dagTemp) {
+        if (temperatuur > settings[DAGTEMPERATUUR]) {
             if (!ventilatorIsAan) {
                 digitalWrite(ventilatorPin, HIGH);
                 Serial.print("vernevelaar aan (temperatuur)");
@@ -582,14 +492,24 @@ class Plantenbak {
     LichtSensor lichtSensor;
     boolean ventilatorIsUit = true;
     boolean vernevelaarIsUit = true;
+    float seizoenSettings[7];
+
+    enum Seizoen {
+            WINTER = 0,
+            ZOMER = 1,
+            REGEN = 2
+        } seizoen;
+
+    float (&settings)[4][12];
 
     public:
-    Plantenbak(byte (&myPins)[8], float mySettingsPlantenbak[]) :
+    Plantenbak(byte (&myPins)[8], float (&myplantenBakSettings)[4][12]) :
 
+        settings(myplantenBakSettings),
         soilHumiditySensor(myPins[0], myPins[1]),
         lichtSensor(myPins[2]),
         luchtVochtigheidTemperatuurSensor(myPins[6]),
-        klimaatRegelaar(myPins[3] , myPins[7], myPins[5], myPins[4], mySettingsPlantenbak)
+        klimaatRegelaar(myPins[3] , myPins[7], myPins[5], myPins[4])
     {}
     //1soilsensorPin1, 2soilPower1, 3lightsensorPin1, 4lampenPin1, 5ventilatorpin1, 6vernevelaarpin1, 7dhtpin1
 
@@ -600,6 +520,33 @@ class Plantenbak {
         luchtVochtigheidTemperatuurSensor.initialisatie();
         klimaatRegelaar.initialisatie();
         Serial.println("plantenbak geinitieerd");
+    }
+
+     float * getSeizoenSettings(RtcDateTime now) {
+
+        int seizoenNu = plantenBakSettings1[4][(now.Month()-1)]; 
+        Serial.println(seizoenNu);
+        
+        switch (seizoenNu) {
+            case WINTER:
+                for (int i = 0; i < 7; i++) {
+                    seizoenSettings[i] = settings[WINTER][i];
+                }
+                return(seizoenSettings);
+                break;
+            case ZOMER:
+                for (int i = 0; i < 7; i++) {
+                    seizoenSettings[i] = settings[ZOMER][i];
+                }
+                return(seizoenSettings);
+                break;
+            case REGEN:
+                for (int i = 0; i < 7; i++) {
+                    seizoenSettings[i] = settings[REGEN][i];
+                }
+                return(seizoenSettings);
+                break;
+        }
     }
 
     void loop(RtcDateTime RtcObjectHuidigeTijd) {
@@ -623,7 +570,7 @@ class Plantenbak {
         Serial.print(" - Lux = ");
         Serial.println(lichtSensor.readLogValue());
         
-        float * settings = klimaatRegelaar.getSeizoenSettings(RtcObjectHuidigeTijd);
+        float * settings = getSeizoenSettings(RtcObjectHuidigeTijd);
         
         Serial.println("doorgegeven settings");
         Serial.println(settings[0]);
@@ -644,8 +591,8 @@ class Plantenbak {
 };
 
 Klok klok;
-Plantenbak plantenbak1(pinArray1, settingsPlantenbak);
-//Plantenbak plantenbak1(pinArray1, settingsPlantenbak);
+Plantenbak plantenbak1(pinArray1, plantenBakSettings1);
+//Plantenbak plantenbak2(pinArray2);
 
 void setup()
 {
