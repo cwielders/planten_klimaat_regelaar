@@ -1,6 +1,7 @@
 {
     "board": "arduino:avr:mega",
     "configuration": "cpu=atmega2560",
-    "sketch": "sketch_oct27b.ino",
-    "port": "COM4"
+    "sketch": "sketch_oct27b-2.ino",
+    "port": "COM4",
+    "output": "../../arduino_build"
 }
