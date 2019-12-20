@@ -787,47 +787,50 @@ class TouchScreen {
                     myGLCD.setBackColor(VGA_GRAY);
                     break;
             }
-        myGLCD.fillRoundRect(2, (i*71) + 5, 315, (i*71) + 70);
-        myGLCD.setColor(VGA_WHITE);
-        myGLCD.setFont(SmallFont);
-        myGLCD.print(String("Temperature"), 11, (i*71) +5);
-        myGLCD.print(String("Humidity"), 11, (i*71) + 38);
-        myGLCD.print(String("Soilmoisture"), 150, (i*71) + 5);
-        myGLCD.print(String("Light"),150, (i*71) + 38);
-        myGLCD.print(String(klimaatDataNu[i][NACHTTEMPERATUUR]) + "/", 11, (i*71) + 20);
-        //myGLCD.drawLine(1,31, 315, 31);
-        myGLCD.print(String("/") + String(klimaatDataNu[i][DAGTEMPERATUUR]), 90, (i*71) + 20);
-        myGLCD.print(String("/") + String(klimaatDataNu[i][LUCHTVOCHTIGHEID]), 59, (i*71) + 52);
-        myGLCD.setColor(VGA_YELLOW);
-        
-        if(klimaatDataNu[i][ISDAUW] == 1) {
-            myGLCD.print(String("Dew"), 265, (i*751) + 21);
-        }
-        if(klimaatDataNu[i][ISREGEN] == 1) {
-            myGLCD.print(String("Rain"), 265, (i*71) + 38);
-        }
-        if(klimaatDataNu[i][ISDAG] == 1) {
-            myGLCD.print(String("Day"), 265, (i*71) + 5);
-        }   else {
-            myGLCD.print(String("Night"), 265, (i*71) + 5);
-        }
-        if (klimaatDataNu[i][SEIZOEN] == WINTER) {
-            myGLCD.print(String("Winter"), 265, (i*71) + 55);
-        }   
-        if (klimaatDataNu[i][SEIZOEN] == ZOMER) {
-            myGLCD.print(String("Summer"), 265, (i*71) + 55);
-        } 
-        if (klimaatDataNu[i][SEIZOEN] == REGEN) {
-            myGLCD.print(String("Wet"), 265, (i*71) + 55);
-        }
-        myGLCD.setFont(BigFont);
-        myGLCD.print(String(klimaatDataNu[i][TEMPERATUUR]), 35, (i*71) + 17);
-        myGLCD.print(String("C"), 75, (i*71) + 17);
-        myGLCD.print(String(klimaatDataNu[i][LUCHTVOCHTIGHEIDNU]) + "%", 11, (i*71) + 50);
-        myGLCD.print(String(klimaatDataNu[i][POTVOCHTIGHEID]) , 150, (i*71) + 17);
-        myGLCD.print(String(klimaatDataNu[i][LICHT]), 150, (i*71) + 50);
-        myGLCD.setColor(VGA_YELLOW);
-        myGLCD.fillCircle(73, (i*71) +19, 2);
+            // int but = myButtons.addButton(2, (i*71)+5, 310, 70, "");
+            // myButtons.drawButton(but);
+            myGLCD.fillRoundRect(2, (i*71) + 5, 315, (i*71) + 70);
+            myGLCD.setColor(VGA_WHITE);
+            myGLCD.drawRoundRect (2, (i*71) + 5, 315, (i*71) + 70);
+            myGLCD.setFont(SmallFont);
+            myGLCD.print(String("Temperature"), 11, (i*71) +5);
+            myGLCD.print(String("Humidity"), 11, (i*71) + 38);
+            myGLCD.print(String("Soilmoisture"), 150, (i*71) + 5);
+            myGLCD.print(String("Light"),150, (i*71) + 38);
+            myGLCD.print(String(klimaatDataNu[i][NACHTTEMPERATUUR]) + "/", 11, (i*71) + 20);
+            //myGLCD.drawLine(1,31, 315, 31);
+            myGLCD.print(String("/") + String(klimaatDataNu[i][DAGTEMPERATUUR]), 90, (i*71) + 20);
+            myGLCD.print(String("/") + String(klimaatDataNu[i][LUCHTVOCHTIGHEID]), 59, (i*71) + 52);
+            myGLCD.setColor(VGA_YELLOW);
+            
+            if(klimaatDataNu[i][ISDAUW] == 1) {
+                myGLCD.print(String("Dew"), 265, (i*751) + 21);
+            }
+            if(klimaatDataNu[i][ISREGEN] == 1) {
+                myGLCD.print(String("Rain"), 265, (i*71) + 38);
+            }
+            if(klimaatDataNu[i][ISDAG] == 1) {
+                myGLCD.print(String("Day"), 265, (i*71) + 5);
+            }   else {
+                myGLCD.print(String("Night"), 265, (i*71) + 5);
+            }
+            if (klimaatDataNu[i][SEIZOEN] == WINTER) {
+                myGLCD.print(String("Winter"), 265, (i*71) + 55);
+            }   
+            if (klimaatDataNu[i][SEIZOEN] == ZOMER) {
+                myGLCD.print(String("Summer"), 265, (i*71) + 55);
+            } 
+            if (klimaatDataNu[i][SEIZOEN] == REGEN) {
+                myGLCD.print(String("Wet"), 265, (i*71) + 55);
+            }
+            myGLCD.setFont(BigFont);
+            myGLCD.print(String(klimaatDataNu[i][TEMPERATUUR]), 35, (i*71) + 17);
+            myGLCD.print(String("C"), 75, (i*71) + 17);
+            myGLCD.print(String(klimaatDataNu[i][LUCHTVOCHTIGHEIDNU]) + "%", 11, (i*71) + 50);
+            myGLCD.print(String(klimaatDataNu[i][POTVOCHTIGHEID]) , 150, (i*71) + 17);
+            myGLCD.print(String(klimaatDataNu[i][LICHT]), 150, (i*71) + 50);
+            myGLCD.setColor(VGA_YELLOW);
+            myGLCD.fillCircle(73, (i*71) +19, 2);
         }
         myGLCD.setColor(VGA_WHITE);
         myGLCD.setBackColor(VGA_BLACK);
@@ -835,6 +838,35 @@ class TouchScreen {
         myGLCD.print(myDatumTijd, CENTER, 220);
         delay(9000);
     }
+
+    void waitForIt(int x1, int y1, int x2, int y2) {
+        myGLCD.setColor(255, 0, 0);
+        myGLCD.drawRoundRect (x1, y1, x2, y2);
+        while (myTouch.dataAvailable())
+            myTouch.read();
+        myGLCD.setColor(255, 255, 255);
+        myGLCD.drawRoundRect (x1, y1, x2, y2);
+    }
+
+    void kiesPlantenBak() {
+        if (myTouch.dataAvailable()) {
+            myTouch.read();
+            x=myTouch.getX();
+            y=myTouch.getY();
+            
+            if ((y>=10) && (y<=70)) { // bovenste bak
+                waitForIt(10, 10, 60, 60);
+            }
+            if ((y>=73) && (y<=143)) {// middelste bak
+                waitForIt(70, 10, 120, 60);
+            }
+            if ((y>=130) && (y<=180)) { // Button: 3
+                waitForIt(130, 10, 180, 60);
+            }
+                '
+        }
+    }
+
 };
 
 //int DataKlimaat::klimaatDataArray[3][15] = {};
