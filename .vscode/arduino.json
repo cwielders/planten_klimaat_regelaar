@@ -1,7 +1,7 @@
 {
     "board": "arduino:avr:mega",
     "configuration": "cpu=atmega2560",
-    "sketch": "sketch_oct27b-2.ino",
+    "sketch": "planten_klimaat_regelaar.ino",
     "port": "COM4",
     "output": "../../arduino_build"
 }
