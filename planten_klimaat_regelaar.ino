@@ -767,6 +767,9 @@ class TouchScreen {
         myGLCD.setFont(BigFont);
         myTouch.InitTouch();
         myTouch.setPrecision(PREC_MEDIUM);
+    // currentPage = '0'; // Indicates that we are at Home Screen
+    // selectedUnit = '0'; // Indicates the selected unit for the first example, cms or inches
+
     }
 
     void toonStartScherm(String myDatumTijd) {
@@ -793,26 +796,26 @@ class TouchScreen {
             myGLCD.setColor(VGA_WHITE);
             myGLCD.drawRoundRect (2, (i*71) + 5, 315, (i*71) + 70);
             myGLCD.setFont(SmallFont);
-            myGLCD.print(String("Temperature"), 11, (i*71) +5);
-            myGLCD.print(String("Humidity"), 11, (i*71) + 38);
-            myGLCD.print(String("Soilmoisture"), 150, (i*71) + 5);
-            myGLCD.print(String("Light"),150, (i*71) + 38);
-            myGLCD.print(String(klimaatDataNu[i][NACHTTEMPERATUUR]) + "/", 11, (i*71) + 20);
+            myGLCD.print(String("Temperature"), 11, (i*71) +6);
+            myGLCD.print(String("Humidity"), 11, (i*71) + 39);
+            myGLCD.print(String("Soilmoisture"), 150, (i*71) + 6);
+            myGLCD.print(String("Light"),150, (i*71) + 39);
+            myGLCD.print(String(klimaatDataNu[i][NACHTTEMPERATUUR]) + "/", 11, (i*71) + 21);
             //myGLCD.drawLine(1,31, 315, 31);
-            myGLCD.print(String("/") + String(klimaatDataNu[i][DAGTEMPERATUUR]), 90, (i*71) + 20);
-            myGLCD.print(String("/") + String(klimaatDataNu[i][LUCHTVOCHTIGHEID]), 59, (i*71) + 52);
+            myGLCD.print(String("/") + String(klimaatDataNu[i][DAGTEMPERATUUR]), 90, (i*71) + 21);
+            myGLCD.print(String("/") + String(klimaatDataNu[i][LUCHTVOCHTIGHEID]), 59, (i*71) + 53);
             myGLCD.setColor(VGA_YELLOW);
             
             if(klimaatDataNu[i][ISDAUW] == 1) {
                 myGLCD.print(String("Dew"), 265, (i*751) + 21);
             }
             if(klimaatDataNu[i][ISREGEN] == 1) {
-                myGLCD.print(String("Rain"), 265, (i*71) + 38);
+                myGLCD.print(String("Rain"), 265, (i*71) + 39);
             }
             if(klimaatDataNu[i][ISDAG] == 1) {
-                myGLCD.print(String("Day"), 265, (i*71) + 5);
+                myGLCD.print(String("Day"), 265, (i*71) + 6);
             }   else {
-                myGLCD.print(String("Night"), 265, (i*71) + 5);
+                myGLCD.print(String("Night"), 265, (i*71) + 6);
             }
             if (klimaatDataNu[i][SEIZOEN] == WINTER) {
                 myGLCD.print(String("Winter"), 265, (i*71) + 55);
@@ -824,13 +827,13 @@ class TouchScreen {
                 myGLCD.print(String("Wet"), 265, (i*71) + 55);
             }
             myGLCD.setFont(BigFont);
-            myGLCD.print(String(klimaatDataNu[i][TEMPERATUUR]), 35, (i*71) + 17);
-            myGLCD.print(String("C"), 75, (i*71) + 17);
-            myGLCD.print(String(klimaatDataNu[i][LUCHTVOCHTIGHEIDNU]) + "%", 11, (i*71) + 50);
-            myGLCD.print(String(klimaatDataNu[i][POTVOCHTIGHEID]) , 150, (i*71) + 17);
-            myGLCD.print(String(klimaatDataNu[i][LICHT]), 150, (i*71) + 50);
+            myGLCD.print(String(klimaatDataNu[i][TEMPERATUUR]), 35, (i*71) + 18);
+            myGLCD.print(String("C"), 75, (i*71) + 18);
+            myGLCD.print(String(klimaatDataNu[i][LUCHTVOCHTIGHEIDNU]) + "%", 11, (i*71) + 51);
+            myGLCD.print(String(klimaatDataNu[i][POTVOCHTIGHEID]) , 150, (i*71) + 18);
+            myGLCD.print(String(klimaatDataNu[i][LICHT]), 150, (i*71) + 51);
             myGLCD.setColor(VGA_YELLOW);
-            myGLCD.fillCircle(73, (i*71) +19, 2);
+            myGLCD.fillCircle(73, (i*71) + 19, 2);
         }
         myGLCD.setColor(VGA_WHITE);
         myGLCD.setBackColor(VGA_BLACK);
@@ -839,32 +842,44 @@ class TouchScreen {
         delay(9000);
     }
 
-    void waitForIt(int x1, int y1, int x2, int y2) {
-        myGLCD.setColor(255, 0, 0);
+    void drawFrame(int x1, int y1, int x2, int y2) {
+        myGLCD.setColor(VGA_YELLOW);
         myGLCD.drawRoundRect (x1, y1, x2, y2);
-        while (myTouch.dataAvailable())
+        while (myTouch.dataAvailable()==true) {}
             myTouch.read();
-        myGLCD.setColor(255, 255, 255);
-        myGLCD.drawRoundRect (x1, y1, x2, y2);
+            myGLCD.setColor(VGA_GREEN);
+            myGLCD.drawRoundRect (x1, y1, x2, y2);
+        
     }
-
-    void kiesPlantenBak() {
-        if (myTouch.dataAvailable()) {
-            myTouch.read();
-            x=myTouch.getX();
-            y=myTouch.getY();
-            
-            if ((y>=10) && (y<=70)) { // bovenste bak
-                waitForIt(10, 10, 60, 60);
-            }
-            if ((y>=73) && (y<=143)) {// middelste bak
-                waitForIt(70, 10, 120, 60);
-            }
-            if ((y>=130) && (y<=180)) { // Button: 3
-                waitForIt(130, 10, 180, 60);
-            }
-                '
-        }
+ 
+    boolean kiesPlantenBak() {
+        //if (myTouch.dataAvailable()==true) {
+        Serial.println("er is gedruktin kisePlantenbak!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        Serial.println("er is gedruktin kisePlantenbak!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        //     myTouch.read();
+        //     x=myTouch.getX();
+        //     y=myTouch.getY();
+        //     //  myGLCD.drawRoundRect (2, (i*71) + 5, 315, (i*71) + 70);
+        //     if ((x>=10) && (x<=305) &&(y>=10) && (y<=203)) { // bovenste bak
+        //         drawFrame(2, 5, 315, 70);
+        //         Serial.println("gedrukt1");
+        //         drawFrame(35, 90, 285, 130); // Custom Function -Highlighs the buttons when it's pressed
+        //     }
+        //     if ((y>=73) && (y<=143)) {// middelste bak
+        //         drawFrame(2, 76, 315, 141);
+        //         Serial.println("gedrukt2");
+        //         drawFrame(35, 90, 285, 130); // Custom Function -Highlighs the buttons when it's pressed
+        //     }
+        //     if ((y>=130) && (y<=180)) { // Button: 3
+        //         drawFrame(2, 147, 315, 312);
+        //         Serial.println("gedrukt3");
+        //         drawFrame(35, 90, 285, 130); // Custom Function -Highlighs the buttons when it's pressed
+        //     }
+        // }
+        //return true;
+        // }   else {
+        //         return false;
+        return true;
     }
 
 };
@@ -889,15 +904,11 @@ void setup() {
     plantenbak1.setup();
     plantenbak2.setup();
     plantenbak3.setup();
-    
 }
 
-void loop()
-{
-    
+void loop() {
     RtcDateTime tijd = klok.getTime();
     String datumTijd = klok.geefDatumTijdString(tijd);
-
     plantenbak1.regelKlimaat(tijd, bakNummer1);
     plantenbak2.regelKlimaat(tijd, bakNummer2);
     plantenbak3.regelKlimaat(tijd, bakNummer3);
@@ -905,11 +916,18 @@ void loop()
     // Serial.println(klimaatDataNu[1][1]);
     // Serial.println(klimaatDataNu[2][1]);
     touchScreen.toonStartScherm(datumTijd);
-    String klimaatDataString = klimaatDataLogger.maakKlimaatDataString();
-    Serial.println(klimaatDataString);
-    klimaatDataLogger.writeToFile(klimaatDataString);
-    klimaatDataLogger.readFromFile();
+    
+     Serial.println("startscherm!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+     delay(3000);
+    if (touchScreen.kiesPlantenBak()) {
+        Serial.println("er is gedrukt!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        Serial.println("er is gedrukt!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    };
+    // String klimaatDataString = klimaatDataLogger.maakKlimaatDataString();
+    //Serial.println(klimaatDataString);
+    // klimaatDataLogger.writeToFile(klimaatDataString);
+    // klimaatDataLogger.readFromFile();
     Serial.println();
-    delay(3000);
+    
 }
 
