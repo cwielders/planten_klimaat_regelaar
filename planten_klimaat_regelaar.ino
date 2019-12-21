@@ -552,7 +552,7 @@ class Klok {
         }
 
         RtcDateTime now = Rtc.GetDateTime();
-        Serial.print("Dit is de loop tijd ");
+        Serial.println("Dit is de loop tijd ");
         printDateTime(now);
         Serial.println();
 
@@ -887,117 +887,23 @@ void waitForIt(int x1, int y1, int x2, int y2)
         
     }
  
-    boolean kiesPlantenBak() {
-          while (true)
-  {
-    if (myTouch.dataAvailable())
-    {
-      myTouch.read();
-      x=myTouch.getX();
-      y=myTouch.getY();
-      
-      if ((y>=10) && (y<=60))  // Upper row
-      {
-        if ((x>=10) && (x<=60))  // Button: 1
-        {
-          waitForIt(10, 10, 60, 60);
-          updateStr('1');
-        }
-        if ((x>=70) && (x<=120))  // Button: 2
-        {
-          waitForIt(70, 10, 120, 60);
-          updateStr('2');
-        }
-        if ((x>=130) && (x<=180))  // Button: 3
-        {
-          waitForIt(130, 10, 180, 60);
-          updateStr('3');
-        }
-        if ((x>=190) && (x<=240))  // Button: 4
-        {
-          waitForIt(190, 10, 240, 60);
-          updateStr('4');
-        }
-        if ((x>=250) && (x<=300))  // Button: 5
-        {
-          waitForIt(250, 10, 300, 60);
-          updateStr('5');
-        }
-      }
-
-      if ((y>=70) && (y<=120))  // Center row
-      {
-        if ((x>=10) && (x<=60))  // Button: 6
-        {
-          waitForIt(10, 70, 60, 120);
-          updateStr('6');
-        }
-        if ((x>=70) && (x<=120))  // Button: 7
-        {
-          waitForIt(70, 70, 120, 120);
-          updateStr('7');
-        }
-        if ((x>=130) && (x<=180))  // Button: 8
-        {
-          waitForIt(130, 70, 180, 120);
-          updateStr('8');
-        }
-        if ((x>=190) && (x<=240))  // Button: 9
-        {
-          waitForIt(190, 70, 240, 120);
-          updateStr('9');
-        }
-        if ((x>=250) && (x<=300))  // Button: 0
-        {
-          waitForIt(250, 70, 300, 120);
-          updateStr('0');
-        }
-      }
-
-      if ((y>=130) && (y<=180))  // Upper row
-      {
-        if ((x>=10) && (x<=150))  // Button: Clear
-        {
-          waitForIt(10, 130, 150, 180);
-          stCurrent[0]='\0';
-          stCurrentLen=0;
-          myGLCD.setColor(0, 0, 0);
-          myGLCD.fillRect(0, 224, 319, 239);
-        }
-        if ((x>=160) && (x<=300))  // Button: Enter
-        {
-          waitForIt(160, 130, 300, 180);
-          if (stCurrentLen>0)
-          {
-            for (x=0; x<stCurrentLen+1; x++)
-            {
-              stLast[x]=stCurrent[x];
+    void kiesPlantenBak() {
+        if (myTouch.dataAvailable()) {
+            myTouch.read();
+            x=myTouch.getX();
+            y=myTouch.getY();
+            // myGLCD.drawRoundRect (2, (i*71) + 5, 315, (i*71) + 70);
+            if ((y>=10) && (y<=70)) { // bovenste bak
+                waitForIt(2, 5, 315, 70);
             }
-            stCurrent[0]='\0';
-            stCurrentLen=0;
-            myGLCD.setColor(0, 0, 0);
-            myGLCD.fillRect(0, 208, 319, 239);
-            myGLCD.setColor(0, 255, 0);
-            myGLCD.print(stLast, LEFT, 208);
-          }
-          else
-          {
-            myGLCD.setColor(255, 0, 0);
-            myGLCD.print("BUFFER EMPTY", CENTER, 192);
-            delay(500);
-            myGLCD.print("            ", CENTER, 192);
-            delay(500);
-            myGLCD.print("BUFFER EMPTY", CENTER, 192);
-            delay(500);
-            myGLCD.print("            ", CENTER, 192);
-            myGLCD.setColor(0, 255, 0);
-          }
+            if ((y>=73) && (y<=143)) {// middelste bak
+                waitForIt(2, 76, 315, 141);
+            }
+            if ((y>=130) && (y<=180)) { // Button: 3
+                waitForIt(2, 142, 315, 212);
+            }
         }
-      }
     }
-  }
-    }
-
 };
 
 //int DataKlimaat::klimaatDataArray[3][15] = {};
@@ -1036,13 +942,17 @@ void loop() {
     int minuut = tijd.Minute();
     Serial.println(minuut);
     int minuutNu = tijd.Minute();
-    while(minuutNu - minuut <= 1){
-        Serial.print(minuutNu - minuut);
+    while ((minuutNu - minuut) < 1) {
+        Serial.print("minuutNu in while loop =");
+        Serial.println(minuutNu);
+        Serial.println(minuutNu - minuut);
         touchScreen.kiesPlantenBak();
         Serial.println("while loop!!!!!!");
         RtcDateTime nieuweTijd = klok.getTime();
         minuutNu = nieuweTijd.Minute();
-        Serial.println(nieuweTijd);
+        Serial.println(minuutNu);
+        Serial.println(minuutNu - minuut);
+        
     }
     // String klimaatDataString = klimaatDataLogger.maakKlimaatDataString();
     //Serial.println(klimaatDataString);
